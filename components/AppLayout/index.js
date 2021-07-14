@@ -1,4 +1,4 @@
-import {Breadcrumb, Layout, Menu} from "antd";
+import {Breadcrumb, Layout} from "antd";
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
@@ -57,11 +57,9 @@ export default function AppLayout({children}) {
                 </HeaderLayout>
                 <ContentStyled>
                     <BreadCrumbStyled>
-                        {breadcrumbs.map(item => {
+                        {breadcrumbs && breadcrumbs.map(item => {
                             return (
-
                                 <Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>
-
                             )
                         })}
                     </BreadCrumbStyled>

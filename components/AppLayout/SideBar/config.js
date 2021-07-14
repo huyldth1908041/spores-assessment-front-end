@@ -5,25 +5,25 @@ export const menuItems = [
     {
         title: "Dashboard",
         href: "/",
-        getIcon: function () {
-            return React.createElement(DashboardOutlined)
-        },
+        icon: "bx bx-category-alt",
         subMenus: [],
     },
     {
         title: "NFT Items",
         href: "/nft-items",
-        getIcon: () => React.createElement(SmileOutlined),
+        icon: "bx bx-package",
         subMenus: [
             {
                 title: "List Items",
                 href: "/nft-items",
+                icon: "bx bx-list-ul",
                 subMenus: [],
             },
 
             {
                 title: "Create Item",
                 href: "/nft-items/create",
+                icon: "bx bx-add-to-queue",
                 subMenus: [],
             }
         ]
