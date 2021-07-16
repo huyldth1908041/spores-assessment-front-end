@@ -28,6 +28,7 @@ const ChildrenWrapper = styled.div`
   min-height: 420px;
   padding: 24px;
 `
+const BREAK_POINT = 992;
 export default function AppLayout({children}) {
     const [windowWidth, setWindowWidth] = useState(0)
     const [breadcrumbs, setBreadcrumbs] = useState([])
@@ -48,7 +49,7 @@ export default function AppLayout({children}) {
                 <link rel="icon" href="/images/logo-mark.png"/>
             </Head>
             <LayoutStyled>
-                <SideBar collapsed={windowWidth < 768} setBreadcrumbs={setBreadcrumbs}/>
+                <SideBar collapsed={windowWidth < BREAK_POINT} setBreadcrumbs={setBreadcrumbs}/>
                 <Layout>
                     <TopNav/>
                     <ContentStyled>
