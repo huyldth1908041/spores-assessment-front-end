@@ -1,38 +1,27 @@
 import {Breadcrumb, Layout} from "antd";
-import {
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-
-} from "@ant-design/icons";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import styled from "styled-components";
 import SideBar from "./SideBar";
+import Head from "next/head";
+import TopNav from "./TopNav";
 
-const {Header, Content, Footer} = Layout;
+const {Content, Footer} = Layout;
 
 
 const LayoutStyled = styled(Layout)`
   min-height: 100vh;
 `
-const HeaderLayout = styled(Header)`
-  padding: 0;
-  background: #fff;
-`
-const ToggleCollapseMenuButton = styled.div`
-  padding: 0 24px;
-  font-size: 18px;
-  line-height: 64px;
-  cursor: pointer;
-  transition: color 0.3s;
-  width: fit-content;
-`
+
 const ContentStyled = styled(Content)`
-  margin: 24px 16px;
+  margin: 10px 16px;
   padding: 24px;
   //background: #fff;
 `
 const BreadCrumbStyled = styled(Breadcrumb)`
   margin: 16px 0;
+  font-family: Roboto,sans-serif;
+  font-weight: 600;
+  font-size: 18px;
 `
 const ChildrenWrapper = styled.div`
   background: #fff;
@@ -40,36 +29,44 @@ const ChildrenWrapper = styled.div`
   padding: 24px;
 `
 export default function AppLayout({children}) {
-    const [collapsed, setCollapsed] = useState(false)
+    const [windowWidth, setWindowWidth] = useState(0)
     const [breadcrumbs, setBreadcrumbs] = useState([])
-    const toggleCollapse = () => {
-        setCollapsed(!collapsed)
+    const handleResize = e => {
+        setWindowWidth(window.innerWidth)
     }
-
+    useEffect(() => {
+        setWindowWidth(window.innerWidth)
+        window.addEventListener("resize", handleResize)
+        return () => {
+            window.removeEventListener("resize", handleResize)
+        }
+    }, [])
     return (
-        <LayoutStyled>
-            <SideBar collapsed={collapsed} setBreadcrumbs={setBreadcrumbs}/>
-            <Layout>
-                <HeaderLayout>
-                    <ToggleCollapseMenuButton onClick={toggleCollapse}>
-                        {collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
-                    </ToggleCollapseMenuButton>
-                </HeaderLayout>
-                <ContentStyled>
-                    <BreadCrumbStyled>
-                        {breadcrumbs && breadcrumbs.map(item => {
-                            return (
-                                <Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>
-                            )
-                        })}
-                    </BreadCrumbStyled>
-                    <ChildrenWrapper>
-                        {children}
-                    </ChildrenWrapper>
-                </ContentStyled>
-                <Footer style={{textAlign: 'center'}}>Ant Design ©2018 Created by Ant UED</Footer>
-            </Layout>
+        <>
+            <Head>
+                <title>Spores</title>
+                <link rel="icon" href="/images/logo-mark.png"/>
+            </Head>
+            <LayoutStyled>
+                <SideBar collapsed={windowWidth < 768} setBreadcrumbs={setBreadcrumbs}/>
+                <Layout>
+                    <TopNav/>
+                    <ContentStyled>
+                        <BreadCrumbStyled>
+                            {breadcrumbs && breadcrumbs.map(item => {
+                                return (
+                                    <Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>
+                                )
+                            })}
+                        </BreadCrumbStyled>
+                        <ChildrenWrapper>
+                            {children}
+                        </ChildrenWrapper>
+                    </ContentStyled>
+                    <Footer style={{textAlign: 'center'}}>Ant Design ©2018 Created by Ant UED</Footer>
+                </Layout>
 
-        </LayoutStyled>
+            </LayoutStyled>
+        </>
     )
 }
