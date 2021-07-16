@@ -4,7 +4,7 @@ import React from "react";
 export const menuItems = [
     {
         title: "Dashboard",
-        href: "/",
+        href: "/dashboard",
         icon: "bx bx-category-alt",
         subMenus: [],
     },
