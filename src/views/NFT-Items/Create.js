@@ -4,16 +4,14 @@ import useForm from "antd/lib/form/hooks/useForm";
 import {useState} from "react";
 import {getBase64} from "../../utils";
 import {toast} from "react-hot-toast";
+import PageHeader from "../../components/PageHeader";
 
 
 const Container = styled.div`
   width: 100%;
   font-family: Roboto, sans-serif;
 `
-const FormTitle = styled.h1`
-  font-size: 30px;
-  font-weight: 600;
-`
+
 const StyledCol = styled(Col)`
   padding: 0 20px !important;
   margin-bottom: 50px;
@@ -121,7 +119,7 @@ const CreateItemView = () => {
     }
     return (
         <Container>
-            <FormTitle>Create new item</FormTitle>
+            <PageHeader title="Create new Item"/>
             <Form
                 onFinish={onFinish}
                 onFinishFailed={onFinishFailed}
