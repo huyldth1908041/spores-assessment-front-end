@@ -3,9 +3,9 @@ import '../styles/globals.css'
 import 'antd/dist/antd.css';
 import 'boxicons/css/boxicons.min.css'
 import React from "react";
-import AppLayout from "../components/AppLayout";
+import AppLayout from "../src/components/AppLayout";
 import {Provider} from "react-redux";
-import store from "../state";
+import store from "../src/state";
 
 function MyApp({Component, pageProps}) {
     return (

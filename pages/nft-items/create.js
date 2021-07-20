@@ -1,3 +1,5 @@
+import CreateItemView from "../../src/views/NFT-Items/Create";
+
 export default function CreateNFTItem() {
-    return <h1>Create form</h1>
+    return <CreateItemView/>
 }
