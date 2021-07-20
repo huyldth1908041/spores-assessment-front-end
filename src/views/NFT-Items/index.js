@@ -1,4 +1,8 @@
+import PageHeader from "../../components/PageHeader";
+
 const ListItemView = () => {
-    return <h1>List Item</h1>
+    return <>
+        <PageHeader title="List Item"/>
+    </>
 }
 export default ListItemView
