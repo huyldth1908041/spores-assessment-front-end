@@ -1,5 +1,5 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
+Spores Assesssment Front End
+Demo App is running at: https://spores-assessment-front-end.vercel.app/
 ## Getting Started
 
 First, run the development server:
