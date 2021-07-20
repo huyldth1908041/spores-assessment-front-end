@@ -19,11 +19,6 @@ const TableCard = styled.div`
   padding: 10px;
 `
 
-
-// const onRowSelectionChange = (selectedRowKeys, selectedRows) => {
-//     console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-// }
-
 export default function DashBoardView() {
     return (
         <div>

@@ -5,12 +5,7 @@ import {useState} from "react";
 import {getBase64} from "../../utils";
 import {toast} from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
-
-
-const Container = styled.div`
-  width: 100%;
-  font-family: Roboto, sans-serif;
-`
+import PageContainer from "../../components/PageContainer";
 
 const StyledCol = styled(Col)`
   padding: 0 20px !important;
@@ -118,7 +113,7 @@ const CreateItemView = () => {
         }
     }
     return (
-        <Container>
+        <PageContainer>
             <PageHeader title="Create new Item"/>
             <Form
                 onFinish={onFinish}
@@ -203,7 +198,7 @@ const CreateItemView = () => {
                     <SubmitButton type="submit">Create</SubmitButton>
                 </Form.Item>
             </Form>
-        </Container>
+        </PageContainer>
 
     )
 }
