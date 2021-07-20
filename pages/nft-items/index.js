@@ -1,8 +1,5 @@
+import ListItemView from "../../src/views/NFT-Items";
 
 export default function ListNFTItems() {
-    return <>
-        <main>
-            <p>List NFT Items</p>
-        </main>
-    </>
+    return <ListItemView/>
 }
