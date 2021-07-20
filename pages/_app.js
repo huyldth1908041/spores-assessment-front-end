@@ -6,12 +6,14 @@ import React from "react";
 import AppLayout from "../src/components/AppLayout";
 import {Provider} from "react-redux";
 import store from "../src/state";
+import {Toaster} from "react-hot-toast";
 
 function MyApp({Component, pageProps}) {
     return (
         <Provider store={store}>
             <AppLayout>
                 <Component {...pageProps} />
+                <Toaster/>
             </AppLayout>
         </Provider>
 

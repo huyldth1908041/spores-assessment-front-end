@@ -2,6 +2,8 @@ import styled from "styled-components";
 import {Col, Form, Image, Input, InputNumber, Row, Upload, Select} from "antd";
 import useForm from "antd/lib/form/hooks/useForm";
 import {useState} from "react";
+import {getBase64} from "../../utils";
+import {toast} from "react-hot-toast";
 
 
 const Container = styled.div`
@@ -92,14 +94,12 @@ const StyledSelect = styled(Select)`
     font-weight: 600;
   }
 `
-//TODO: Separate file
-const getBase64 = (file, callback) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(file);
-};
-
-
+const TokenSymbol = styled(Image)`
+  width: 17px;
+  height: 17px;
+  margin-right: 10px;
+  padding-top: 2px;
+`
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 const CreateItemView = () => {
     const {form} = useForm();
@@ -109,14 +109,14 @@ const CreateItemView = () => {
         console.log(values)
     }
     const onFinishFailed = (errorInfo) => {
-        console.log(errorInfo)
+        toast.error('Please check form value then try again!');
     }
     const handleChooseFile = ({file}) => {
         if (ALLOWED_TYPES.includes(file.type)) {
             setFile(file);
             getBase64(file, setImage);
         } else {
-            console.error({message: 'File Type is not allowed'});
+            toast.error('File type not support !');
         }
     }
     return (
@@ -160,7 +160,7 @@ const CreateItemView = () => {
                             {image ? (
                                 <PreviewUploadFile src={image} preview={false}/>
                             ) : (
-                                <UploadButton>
+                                <UploadButton type="button">
                                     Upload File
                                 </UploadButton>
                             )}
@@ -189,8 +189,14 @@ const CreateItemView = () => {
                             rules={[{required: true, message: "Currency is required"}]}
                         >
                             <StyledSelect defaultValue="weth">
-                                <Select.Option value="weth">WETH</Select.Option>
-                                <Select.Option value="usdc">USDC</Select.Option>
+                                <Select.Option value="weth">
+                                    <TokenSymbol src="/images/weth-icon.svg"/>
+                                    WETH
+                                </Select.Option>
+                                <Select.Option value="usdc">
+                                    <TokenSymbol src="/images/usdc-icon.svg"/>
+                                    USDC
+                                </Select.Option>
                             </StyledSelect>
                         </Form.Item>
                     </StyledCol>
