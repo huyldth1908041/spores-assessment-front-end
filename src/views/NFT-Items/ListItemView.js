@@ -51,9 +51,9 @@ const ListItemView = () => {
             <SearchBar placeholderText="Search items..." onSearch={handleSearch}/>
             <TopHeaderRight>
                 <ListTypeIcon
-                    className={isTableView ? "bx bx-table" : "bx bx-list-ul"}
+                    className={isTableView ? "bx bx-list-ul" : "bx bx-table"}
                     onClick={toggleListType}
-                    title={isTableView ? "Table View" : "List View"}
+                    title={isTableView ? "List View" : "Table View"}
                 />
             </TopHeaderRight>
         </TopHeader>
