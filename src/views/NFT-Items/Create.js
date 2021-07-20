@@ -183,11 +183,11 @@ const CreateItemView = () => {
                         >
                             <StyledSelect defaultValue="weth">
                                 <Select.Option value="weth">
-                                    <TokenSymbol src="/images/weth-icon.svg"/>
+                                    <TokenSymbol src="/images/weth-icon.svg" preview={false}/>
                                     WETH
                                 </Select.Option>
                                 <Select.Option value="usdc">
-                                    <TokenSymbol src="/images/usdc-icon.svg"/>
+                                    <TokenSymbol src="/images/usdc-icon.svg" preview={false}/>
                                     USDC
                                 </Select.Option>
                             </StyledSelect>
