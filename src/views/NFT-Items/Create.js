@@ -1,15 +1,16 @@
 import styled from "styled-components";
-import {Col, Form, Image, Input, InputNumber, Row, Upload, Select} from "antd";
+import {Col, Form, Image, Input, InputNumber, Row, Upload, Select, Radio, DatePicker} from "antd";
 import useForm from "antd/lib/form/hooks/useForm";
 import {useState} from "react";
 import {getBase64} from "../../utils";
 import {toast} from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
 import PageContainer from "../../components/PageContainer";
-
+import moment from "moment";
+const {RangePicker} = DatePicker
 const StyledCol = styled(Col)`
   padding: 0 20px !important;
-  margin-bottom: 50px;
+  margin-bottom: 30px;
 `
 
 const StyledTextInput = styled(Input)`
@@ -78,7 +79,7 @@ const StyledInputNumber = styled(InputNumber)`
 
 `
 const StyledSelect = styled(Select)`
-  >div.ant-select-selector {
+  > div.ant-select-selector {
     border: 1px solid #111;
     border-radius: 15px !important;
     outline: none;
@@ -93,12 +94,59 @@ const TokenSymbol = styled(Image)`
   margin-right: 10px;
   padding-top: 2px;
 `
+const ItemTypeContainer = styled.div`
+  width: 100%;
+  padding: 10px;
+`
+const FormTitle = styled.h1`
+  font-weight: bold;
+  font-size: 28px;
+`
+
+const StyledRadioButton = styled(Radio.Button)`
+  margin-right: 10px;
+  width: 220px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  font-size: 16px !important;
+  border: 1px solid #111;
+  border-radius: 15px !important;
+
+  &.ant-radio-button-wrapper-checked {
+    //  border-left: none !important;
+    background-image: linear-gradient(to right, #349eff, #62b4ff) !important;
+  }
+
+  &:hover {
+    color: black;
+  }
+
+  &:not(:first-child)::before {
+    display: none;
+  }
+
+  &:first-child {
+    border: 1px solid #111;
+  }
+`
+const StyledRangePicker = styled(RangePicker)`
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+`
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 const CreateItemView = () => {
     const {form} = useForm();
     const [file, setFile] = useState();
     const [image, setImage] = useState();
+    const [pricingType, setPricingType] = useState("fixed")
     const onFinish = (values) => {
+        if(!file) {
+            toast.error("Please pick asset image")
+            return
+        }
+        console.log(file)
         console.log(values)
     }
     const onFinishFailed = (errorInfo) => {
@@ -111,6 +159,13 @@ const CreateItemView = () => {
         } else {
             toast.error('File type not support !');
         }
+    }
+    const handleChangePricingType = e => {
+        setPricingType(e.target.value)
+    }
+    function disabledDate(current) {
+        // Can not select days before today
+        return current && current < moment().startOf('day');
     }
     return (
         <PageContainer>
@@ -164,7 +219,22 @@ const CreateItemView = () => {
                             <p> PNG, GIF, WEBP, MP4 or MP3. Max 30mb.</p>
                         </UploadHelper>
                     </StyledCol>
-
+                    <StyledCol span={24}>
+                        <ItemTypeContainer>
+                            <FormTitle>Chose sale type</FormTitle>
+                            <Radio.Group
+                                defaultValue="fixed"
+                                buttonStyle="solid"
+                                onChange={handleChangePricingType}
+                            >
+                                <StyledRadioButton value="fixed">Fixed price</StyledRadioButton>
+                                <StyledRadioButton value="auction">Unlimited auction</StyledRadioButton>
+                            </Radio.Group>
+                        </ItemTypeContainer>
+                    </StyledCol>
+                    <StyledCol span={24}>
+                        <FormTitle>{pricingType === "fixed" ? "Pricing" : "Initial pricing"}</FormTitle>
+                    </StyledCol>
                     <StyledCol xl={12}>
                         <Form.Item
                             name="Price"
@@ -173,26 +243,44 @@ const CreateItemView = () => {
                                 {type: "number", min: 0, message: "Price must be larger than 0"}
                             ]}
                         >
-                            <StyledInputNumber type="text" placeholder="Price"/>
+                            <StyledInputNumber
+                                type="text"
+                                placeholder={pricingType === "fixed" ? "Price" : "Min Price"}/>
                         </Form.Item>
                     </StyledCol>
                     <StyledCol xl={12}>
+
                         <Form.Item
                             name="Currency"
                             rules={[{required: true, message: "Currency is required"}]}
+                            initialValue="WETH"
                         >
-                            <StyledSelect defaultValue="weth">
-                                <Select.Option value="weth">
+                            <StyledSelect>
+                                <Select.Option value="WETH">
                                     <TokenSymbol src="/images/weth-icon.svg" preview={false}/>
                                     WETH
                                 </Select.Option>
-                                <Select.Option value="usdc">
+                                <Select.Option value="USDC">
                                     <TokenSymbol src="/images/usdc-icon.svg" preview={false}/>
                                     USDC
                                 </Select.Option>
                             </StyledSelect>
                         </Form.Item>
                     </StyledCol>
+
+                    {pricingType === "auction" && (
+                        <StyledCol xl={12}>
+                            <FormTitle>Auction Time</FormTitle>
+                            <Form.Item
+                                name="auctionTime"
+                                rules={[{required: true, message: "Auction time is required"}]}
+                            >
+                                <StyledRangePicker
+                                    disabledDate={disabledDate}
+                                />
+                            </Form.Item>
+                        </StyledCol>
+                    )}
                 </Row>
                 <Form.Item>
                     <SubmitButton type="submit">Create</SubmitButton>

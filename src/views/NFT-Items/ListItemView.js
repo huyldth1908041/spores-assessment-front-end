@@ -78,7 +78,6 @@ const ListItemView = () => {
                             )
                         })}
                     </Row>
-
                 )
             }
         </ListItemContainer>
