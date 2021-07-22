@@ -173,7 +173,9 @@ const CreateItemView = () => {
             <Form
                 onFinish={onFinish}
                 onFinishFailed={onFinishFailed}
-                form={form}>
+                form={form}
+                name="createItem"
+            >
                 <Row gutter={16}>
                     <StyledCol xl={12}>
                         <Form.Item

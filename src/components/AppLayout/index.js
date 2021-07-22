@@ -4,6 +4,7 @@ import styled from "styled-components";
 import SideBar from "./SideBar";
 import Head from "next/head";
 import TopNav from "./TopNav";
+import {useRouter} from "next/router";
 
 const {Content, Footer} = Layout;
 
@@ -19,7 +20,7 @@ const ContentStyled = styled(Content)`
 `
 const BreadCrumbStyled = styled(Breadcrumb)`
   margin: 16px 0;
-  font-family: Roboto,sans-serif;
+  font-family: Roboto, sans-serif;
   font-weight: 600;
   font-size: 18px;
 `
@@ -28,10 +29,17 @@ const ChildrenWrapper = styled.div`
   min-height: 420px;
   padding: 24px;
 `
+const FullPageWrapper = styled.div`
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+`
 const BREAK_POINT = 992;
 export default function AppLayout({children}) {
     const [windowWidth, setWindowWidth] = useState(0)
     const [breadcrumbs, setBreadcrumbs] = useState([])
+    const route = useRouter()
     const handleResize = e => {
         setWindowWidth(window.innerWidth)
     }
@@ -48,26 +56,35 @@ export default function AppLayout({children}) {
                 <title>Spores</title>
                 <link rel="icon" href="/images/logo-mark.png"/>
             </Head>
-            <LayoutStyled>
-                <SideBar collapsed={windowWidth < BREAK_POINT} setBreadcrumbs={setBreadcrumbs}/>
-                <Layout>
-                    <TopNav/>
-                    <ContentStyled>
-                        <BreadCrumbStyled>
-                            {breadcrumbs && breadcrumbs.map(item => {
-                                return (
-                                    <Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>
-                                )
-                            })}
-                        </BreadCrumbStyled>
-                        <ChildrenWrapper>
-                            {children}
-                        </ChildrenWrapper>
-                    </ContentStyled>
-                    <Footer style={{textAlign: 'center'}}>Ant Design ©2018 Created by Ant UED</Footer>
-                </Layout>
+            {route.pathname === '/login' || route.pathname === '/register' ?
+                (
+                    <FullPageWrapper>
+                        {children}
+                    </FullPageWrapper>
+                ) :
+                (
+                    <LayoutStyled>
+                        <SideBar collapsed={windowWidth < BREAK_POINT} setBreadcrumbs={setBreadcrumbs}/>
+                        <Layout>
+                            <TopNav/>
+                            <ContentStyled>
+                                <BreadCrumbStyled>
+                                    {breadcrumbs && breadcrumbs.map(item => {
+                                        return (
+                                            <Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>
+                                        )
+                                    })}
+                                </BreadCrumbStyled>
+                                <ChildrenWrapper>
+                                    {children}
+                                </ChildrenWrapper>
+                            </ContentStyled>
+                            <Footer style={{textAlign: 'center'}}>Ant Design ©2018 Created by Ant UED</Footer>
+                        </Layout>
 
-            </LayoutStyled>
+                    </LayoutStyled>
+                )}
+
         </>
     )
 }
