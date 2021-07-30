@@ -14,9 +14,5 @@ export const userMenu = [
         "title": "Settings",
         href: "/user/setting"
     },
-    {
-        "icon": "bx bx-log-out-circle bx-rotate-180",
-        "title": "Logout",
-        href: "/logout"
-    }
+
 ]

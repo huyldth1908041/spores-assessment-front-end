@@ -41,7 +41,7 @@ const StyledButton = styled.button`
   cursor: pointer;
   background: #fbceb5;
   font-weight: 400;
-  margin:10px 0;
+  margin: 10px 0;
   text-transform: uppercase;
 `
 const Logo = styled.div`
@@ -52,55 +52,112 @@ const Logo = styled.div`
   align-items: center;
   margin-bottom: 20px;
 `
-const AuthenticationForm = ({formFields, onFinish, onFinishError, submitText, formName, formTitle, redirectUrl, redirectText}) => {
-    const handleFinish = (values) => {
-       onFinish(values)
-    }
-    const handleFinishFail = (errors) => {
-        onFinishError(errors)
-    }
+const AuthenticationForm =
+    ({
+         formFields,
+         onFinish,
+         onFinishError,
+         submitText,
+         formName,
+         formTitle,
+         redirectUrl,
+         redirectText,
+         showVerifyEmail,
+         handleVerifyEmail,
+         email,
+         isExec,
+         reSendCode,
+         toggleShowVerifyEmail
+     }) => {
+        const handleFinish = (values) => {
+            onFinish(values)
+        }
+        const handleFinishFail = (errors) => {
+            onFinishError(errors)
+        }
 
-    return (
-        <CenterItemContainer>
-            <FormWrapper>
-                <Logo>
-                    <Image
-                        src="/images/logo-mark.png"
-                        preview={false}
-                    />
-                </Logo>
-                <FormTitle>{formTitle}</FormTitle>
-                <Form
-                    name={formName}
-                    onFinish={handleFinish}
-                    onFinishFailed={handleFinishFail}
-                >
-                    {formFields.map(item => {
-                        return (
-                            <Form.Item
-                                key={item.name}
-                                name={item.name}
-                                rules={item.rules && item.rules}
-                            >
-                                <StyledInput
-                                    prefix={item.prefix && <InputIcon className={item.prefix}/>}
-                                    placeholder={item.placeholder || ""}
-                                    type={item.inputType}
-                                />
-                            </Form.Item>
-                        )
-                    })}
-                    <Form.Item>
-                        <StyledButton type="submit">
-                            {submitText}
-                        </StyledButton>
-                        <Link href={redirectUrl}>
-                            <a>{redirectText}</a>
-                        </Link>
-                    </Form.Item>
-                </Form>
-            </FormWrapper>
-        </CenterItemContainer>
-    )
-}
+        return (
+            <CenterItemContainer>
+                <FormWrapper>
+                    <Logo>
+                        <Image
+                            src="/images/logo-mark.png"
+                            preview={false}
+                        />
+                    </Logo>
+                    {showVerifyEmail ?
+                        (
+                            <>
+                                <FormTitle>Verify Email</FormTitle>
+                                <p>We've send a verify code to {email} please check</p>
+                                <p
+                                    style={{color: "blue", cursor: "pointer"}}
+                                    onClick={reSendCode}
+                                >
+                                    Resend verify code
+                                </p>
+                                <Form
+                                    name="verifyEmail"
+                                    onFinish={handleVerifyEmail}
+                                    onFinishFailed={handleFinishFail}
+                                >
+                                    <Form.Item
+                                        name="code"
+                                        rules={[{required: true, message: "Please enter verify code"}]}
+                                    >
+                                        <StyledInput
+                                            prefix={<InputIcon className="bx bx-lock"/>}
+                                            placeholder="Verify code"
+                                            type="text"
+                                        />
+                                    </Form.Item>
+                                    <StyledButton type="button" onClick={() => toggleShowVerifyEmail()}>
+                                        Go back
+                                    </StyledButton>
+                                    <Form.Item>
+                                        <StyledButton type="submit" disable={isExec}>
+                                            {isExec ? "Verifying..." : "Verify"}
+                                        </StyledButton>
+                                    </Form.Item>
+                                </Form>
+                            </>
+                        ) : (
+                            <>
+                                <FormTitle>{formTitle}</FormTitle>
+                                <Form
+                                    name={formName}
+                                    onFinish={handleFinish}
+                                    onFinishFailed={handleFinishFail}
+                                >
+                                    {formFields.map(item => {
+                                        return (
+                                            <Form.Item
+                                                key={item.name}
+                                                name={item.name}
+                                                rules={item.rules && item.rules}
+                                            >
+                                                <StyledInput
+                                                    prefix={item.prefix && <InputIcon className={item.prefix}/>}
+                                                    placeholder={item.placeholder || ""}
+                                                    type={item.inputType}
+                                                    autoComplete="off"
+                                                />
+                                            </Form.Item>
+                                        )
+                                    })}
+                                    <Form.Item>
+                                        <StyledButton type="submit" disable={isExec}>
+                                            {isExec ? "Loading..." : submitText}
+                                        </StyledButton>
+                                        <Link href={redirectUrl}>
+                                            <a>{redirectText}</a>
+                                        </Link>
+                                    </Form.Item>
+                                </Form>
+                            </>
+                        )}
+                </FormWrapper>
+            </CenterItemContainer>
+        )
+    }
 export default AuthenticationForm

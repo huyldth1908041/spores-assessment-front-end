@@ -13,8 +13,8 @@ function MyApp({Component, pageProps}) {
         <Provider store={store}>
             <AppLayout>
                 <Component {...pageProps} />
-                <Toaster/>
             </AppLayout>
+            <Toaster/>
         </Provider>
 
     )

@@ -25,7 +25,10 @@ export const registerFormFields = [
         name: "userAddress",
         prefix: "bx bx-wallet",
         placeholder: "Wallet Address",
-        inputType: "text"
+        inputType: "text",
+        rules: [
+            {required: true, message: "Please enter your address!"},
+        ]
     },
     {
         name: "password",

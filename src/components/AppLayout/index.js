@@ -5,6 +5,7 @@ import SideBar from "./SideBar";
 import Head from "next/head";
 import TopNav from "./TopNav";
 import {useRouter} from "next/router";
+import {authenticateRoutes, BREAK_POINT} from "./config";
 
 const {Content, Footer} = Layout;
 
@@ -35,7 +36,7 @@ const FullPageWrapper = styled.div`
   width: 100vw;
   height: 100vh;
 `
-const BREAK_POINT = 992;
+
 export default function AppLayout({children}) {
     const [windowWidth, setWindowWidth] = useState(0)
     const [breadcrumbs, setBreadcrumbs] = useState([])
@@ -56,7 +57,7 @@ export default function AppLayout({children}) {
                 <title>Spores</title>
                 <link rel="icon" href="/images/logo-mark.png"/>
             </Head>
-            {route.pathname === '/login' || route.pathname === '/register' ?
+            {authenticateRoutes.includes(route.pathname) ?
                 (
                     <FullPageWrapper>
                         {children}
