@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import {Header} from "antd/lib/layout/layout";
 import DropDown from "../../DropDown";
-import {Menu} from "antd";
 import UserToggle from "./UserToggle";
 import UserMenu from "./UserMenu";
 import ThemeButton from "../../ThemeButton";
 import SearchBar from "../../SearchBar";
+import useToken from "../../../hooks/useToken";
 
 const HeaderLayout = styled(Header)`
   background: #fff;
@@ -26,7 +26,7 @@ const TopNavRightItem = styled.div`
 `
 
 export default function TopNav() {
-    const currentUser = {name: "Luu Huy", avatar: "/images/logo-mark.png"}
+    let storage = useToken();
     return (
         <HeaderLayout>
             <SearchBar placeholderText="Search here..." onSearch={(query) => console.log(query)}/>
@@ -34,7 +34,7 @@ export default function TopNav() {
                 <TopNavRightItem>
                     <DropDown
                         menu={<UserMenu/>}
-                        customToggle={() => <UserToggle user={currentUser}/>}/>
+                        customToggle={() => <UserToggle user={storage}/>}/>
                 </TopNavRightItem>
                 <TopNavRightItem>
                     <ThemeButton/>

@@ -22,14 +22,14 @@ export default function UserToggle({user}) {
         <Container>
             <UserImg>
                 <Image
-                    src={user.avatar}
+                    src="/images/logo-mark.png"
                     width={40}
                     height={40}
                     alt="user avatar"
                 />
             </UserImg>
             <UserName>
-                {user.name}
+                {user.email}
             </UserName>
         </Container>
     )
