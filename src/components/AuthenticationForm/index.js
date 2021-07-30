@@ -83,13 +83,14 @@ const AuthenticationForm =
                         <Image
                             src="/images/logo-mark.png"
                             preview={false}
+                            alt="avatar"
                         />
                     </Logo>
                     {showVerifyEmail ?
                         (
                             <>
                                 <FormTitle>Verify Email</FormTitle>
-                                <p>We've send a verify code to {email} please check</p>
+                                <p>We&apos;ve send a verify code to {email} please check</p>
                                 <p
                                     style={{color: "blue", cursor: "pointer"}}
                                     onClick={reSendCode}
