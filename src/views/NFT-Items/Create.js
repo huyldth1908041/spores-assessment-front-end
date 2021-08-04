@@ -7,6 +7,11 @@ import {toast} from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
 import PageContainer from "../../components/PageContainer";
 import moment from "moment";
+import useToken from "../../hooks/useToken";
+import Fire from "../../service/fire";
+import itemsApi from "../../service/itemsApi";
+import useItemsApi from "../../hooks/useItemsApi";
+
 const {RangePicker} = DatePicker
 const StyledCol = styled(Col)`
   padding: 0 20px !important;
@@ -140,15 +145,52 @@ const CreateItemView = () => {
     const {form} = useForm();
     const [file, setFile] = useState();
     const [image, setImage] = useState();
+    const [uploadedImgUrl, setUploadedImgUrl] = useState()
     const [pricingType, setPricingType] = useState("fixed")
-    const onFinish = (values) => {
-        if(!file) {
-            toast.error("Please pick asset image")
-            return
-        }
-        console.log(file)
-        console.log(values)
+    const {createNewItem} = useItemsApi()
+    const [isExec, setIsExec] = useState(false)
+
+    const onFinish = async (values) => {
+        const createItemPromise = new Promise(async (resolve, reject) => {
+            try {
+                setIsExec(true)
+                if (!file) {
+                    reject('Please choose item image')
+                }
+                if (!uploadedImgUrl) {
+                    reject("Can not upload your image")
+                }
+                const data = {
+                    currency: values.currency,
+                    name: values.name,
+                    price: values.price,
+                    description: values.description,
+                    image: uploadedImgUrl.imgUrl,
+                    type: pricingType,
+                }
+                if (pricingType === "auction") {
+                    data.create_auction_input = {
+                        initial_price: values.price,
+                        end_at: values.auctionTime[1].valueOf()
+                    }
+                }
+                const res = await createNewItem(data)
+            } catch (err) {
+                reject(err.message)
+            } finally {
+                setIsExec(false)
+            }
+        });
+
+        await toast.promise(createItemPromise, {
+            loading: 'Saving new items...',
+            success: 'Saved success !',
+            error:  (err) => `Create item failed: ${err.toString()} !`
+        });
+
+
     }
+
     const onFinishFailed = (errorInfo) => {
         toast.error('Please check form value then try again!');
     }
@@ -156,6 +198,10 @@ const CreateItemView = () => {
         if (ALLOWED_TYPES.includes(file.type)) {
             setFile(file);
             getBase64(file, setImage);
+            //upload to fire base then get upload url
+            Fire.create.uploadImage(file, () => {
+                toast.error("upload to firebase failed")
+            }, setUploadedImgUrl);
         } else {
             toast.error('File type not support !');
         }
@@ -163,10 +209,12 @@ const CreateItemView = () => {
     const handleChangePricingType = e => {
         setPricingType(e.target.value)
     }
+
     function disabledDate(current) {
         // Can not select days before today
         return current && current < moment().startOf('day');
     }
+
     return (
         <PageContainer>
             <PageHeader title="Create new Item"/>
@@ -177,7 +225,7 @@ const CreateItemView = () => {
                 name="createItem"
             >
                 <Row gutter={16}>
-                    <StyledCol xl={12}>
+                    <StyledCol xl={24}>
                         <Form.Item
                             name="name"
                             rules={[{required: true, message: "Name is required"}]}
@@ -185,14 +233,10 @@ const CreateItemView = () => {
                             <StyledTextInput type="text" placeholder="Name"/>
                         </Form.Item>
                     </StyledCol>
-                    <StyledCol xl={12}>
-                        <Form.Item name="metadataUrl">
-                            <StyledTextInput type="text" placeholder="Metadata Url"/>
-                        </Form.Item>
-                    </StyledCol>
+
                     <StyledCol xs={12}>
                         <Form.Item
-                            name="Description"
+                            name="description"
                             rules={[{required: true, message: "Description is required"}]}
                         >
                             <StyledTextArea placeholder="Description" rows={6}/>
@@ -239,7 +283,7 @@ const CreateItemView = () => {
                     </StyledCol>
                     <StyledCol xl={12}>
                         <Form.Item
-                            name="Price"
+                            name="price"
                             rules={[
                                 {required: true, message: "Price is required"},
                                 {type: "number", min: 0, message: "Price must be larger than 0"}
@@ -253,7 +297,7 @@ const CreateItemView = () => {
                     <StyledCol xl={12}>
 
                         <Form.Item
-                            name="Currency"
+                            name="currency"
                             rules={[{required: true, message: "Currency is required"}]}
                             initialValue="WETH"
                         >
