@@ -19,11 +19,14 @@ axiosClient.interceptors.response.use((response) => {
     return response;
 }, (error) => {
     // Handle errors
-    const newError = {
-        statusCode: error.response.status,
-        message: error.response.data.message,
-        errors: error.response.data.errors
+    if (error.response) {
+        error = {
+            statusCode: error?.response?.status,
+            message: error?.response?.data?.message,
+            errors: error.response.data.errors
+        }
     }
-    throw newError
+
+    throw error
 });
 export default axiosClient;
