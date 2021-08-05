@@ -11,6 +11,7 @@ import useToken from "../../hooks/useToken";
 import Fire from "../../service/fire";
 import itemsApi from "../../service/itemsApi";
 import useItemsApi from "../../hooks/useItemsApi";
+import {ALLOWED_TYPES} from "./config";
 
 const {RangePicker} = DatePicker
 const StyledCol = styled(Col)`
@@ -140,7 +141,7 @@ const StyledRangePicker = styled(RangePicker)`
   height: 50px;
   border-radius: 10px;
 `
-const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+
 const CreateItemView = () => {
     const [form] = useForm();
     const [file, setFile] = useState();

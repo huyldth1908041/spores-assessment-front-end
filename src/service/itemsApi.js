@@ -21,6 +21,15 @@ const itemsApi = {
         return await axiosClient.post(url, body, {headers: {Authorization: token}})
     },
 
+    updateItem: async (token, id, body) => {
+        const url = `/items/${id}`
+        return await axiosClient.put(url, body, {headers: {Authorization: token}})
+    },
+    deleteItem: async (token, id) => {
+        const url = `/items/${id}`
+        return await axiosClient.delete(url, {headers: {Authorization: token}})
+    }
+
 }
 
 export default itemsApi
