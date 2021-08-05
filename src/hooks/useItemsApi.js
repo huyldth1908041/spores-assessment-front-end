@@ -8,7 +8,11 @@ const useItemsApi = () => {
         return await itemsApi.createNewItem(tokenData.token, body)
     }
 
-    return {createNewItem}
+    const getListItems = async (params) => {
+        //params to paginate
+        return await itemsApi.getListItems(tokenData.token, params)
+    }
+    return {createNewItem, getListItems}
 }
 
 export default useItemsApi

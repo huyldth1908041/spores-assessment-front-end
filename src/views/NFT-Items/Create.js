@@ -142,14 +142,13 @@ const StyledRangePicker = styled(RangePicker)`
 `
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 const CreateItemView = () => {
-    const {form} = useForm();
+    const [form] = useForm();
     const [file, setFile] = useState();
     const [image, setImage] = useState();
     const [uploadedImgUrl, setUploadedImgUrl] = useState()
     const [pricingType, setPricingType] = useState("fixed")
     const {createNewItem} = useItemsApi()
     const [isExec, setIsExec] = useState(false)
-
     const onFinish = async (values) => {
         const createItemPromise = new Promise(async (resolve, reject) => {
             try {
@@ -158,7 +157,7 @@ const CreateItemView = () => {
                     reject('Please choose item image')
                 }
                 if (!uploadedImgUrl) {
-                    reject("Can not upload your image")
+                    reject("Uploading your image please try again!")
                 }
                 const data = {
                     currency: values.currency,
@@ -175,6 +174,11 @@ const CreateItemView = () => {
                     }
                 }
                 const res = await createNewItem(data)
+                //reset form values
+                form.resetFields()
+                setImage("");
+                resolve(res)
+
             } catch (err) {
                 reject(err.message)
             } finally {
@@ -184,7 +188,7 @@ const CreateItemView = () => {
 
         await toast.promise(createItemPromise, {
             loading: 'Saving new items...',
-            success: 'Saved success !',
+            success: (res) => `Saved item ${res.data.name} success !`,
             error:  (err) => `Create item failed: ${err.toString()} !`
         });
 
@@ -329,7 +333,9 @@ const CreateItemView = () => {
                     )}
                 </Row>
                 <Form.Item>
-                    <SubmitButton type="submit">Create</SubmitButton>
+                    <SubmitButton type="submit" disable={isExec}>
+                        {isExec ? "Saving..." : "Create"}
+                    </SubmitButton>
                 </Form.Item>
             </Form>
         </PageContainer>
