@@ -1,8 +1,13 @@
 import axiosClient from "./axiosClient";
 
 const itemsApi = {
-    getListItems: async (token, params = {}) => {
-        const url ="items/list"
+    getPrivateListItems: async (token, params = {}) => {
+        const url ="items/private"
+        return await axiosClient.get(url, {headers: {Authorization: token}, params: params});
+    },
+
+    getPublicListItems: async (token, params = {}) => {
+        const url ="items/public"
         return await axiosClient.get(url, {headers: {Authorization: token}, params: params});
     },
 
@@ -12,7 +17,7 @@ const itemsApi = {
     },
 
     createNewItem: async (token, body) => {
-        const url = "/items/create"
+        const url = "/items/"
         return await axiosClient.post(url, body, {headers: {Authorization: token}})
     },
 
