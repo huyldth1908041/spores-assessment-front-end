@@ -6,11 +6,10 @@ import {useEffect, useState} from "react";
 import Table from "../../components/Table"
 import {NFTItemsFields} from "./config";
 import AssetCard from "../../components/AssetCard";
-import {Col, Pagination, Row} from "antd";
+import {Col, Pagination, Row, Switch} from "antd";
 import {toast} from "react-hot-toast";
-import {getLocalStorageObject} from "../../utils";
-import itemsApi from "../../service/itemsApi";
 import {useRouter} from "next/router";
+import useItemsApi from "../../hooks/useItemsApi";
 
 const TopHeader = styled.div`
   width: 100%;
@@ -49,28 +48,50 @@ const ListItemView = () => {
     const [isTableView, setIsTableView] = useState(true)
     const [totalItems, setTotalItems] = useState(1)
     const [listItems, setListItems] = useState([]);
+    const [isByMeList, setIsByMeList] = useState(false)
     const router = useRouter()
+    const {getCreatedByMeItems, getAllItems} = useItemsApi()
     const onChange = async (page, pageSize) => {
         await router.push(`/nft-items?limit=${pageSize}&page=${page}`)
     }
+    const handleChangeListType = (checked) => {
+        setIsByMeList(checked)
+    }
     useEffect(() => {
-        const tokenData = getLocalStorageObject("token")
         const params = router.query.limit ? router.query : {limit: 8, page: 1}
-        itemsApi.getListItems(tokenData.token, params).then(res => {
-            const list = res.data.items.map(item => {
-                const newItem = {
-                    ...item,
-                    key: item.id,
-                }
-                delete item.id
-                return newItem;
+        if (isByMeList) {
+            console.log("is by me")
+            getCreatedByMeItems(params).then(res => {
+                const list = res.data.items.map(item => {
+                    const newItem = {
+                        ...item,
+                        key: item.id,
+                    }
+                    delete item.id
+                    return newItem;
+                })
+                setListItems(list)
+                setTotalItems(res.data.totalRows)
+            }).catch(err => {
+                toast.error(err.message)
             })
-            setListItems(list)
-            setTotalItems(res.data.totalRows)
-        }).catch(err => {
-            toast.error(err.message)
-        })
-    }, [router])
+        } else {
+            getAllItems(params).then(res => {
+                const list = res.data.items.map(item => {
+                    const newItem = {
+                        ...item,
+                        key: item.id,
+                    }
+                    delete item.id
+                    return newItem;
+                })
+                setListItems(list)
+                setTotalItems(res.data.totalRows)
+            }).catch(err => {
+                toast.error(err.message)
+            })
+        }
+    }, [router, getAllItems, isByMeList])
     const toggleListType = () => {
         setIsTableView(!isTableView)
     }
@@ -84,6 +105,8 @@ const ListItemView = () => {
         <PageHeader title="List Item"/>
         <TopHeader>
             <SearchBar placeholderText="Search items..." onSearch={handleSearch}/>
+            <Switch checkedChildren="By me" unCheckedChildren="All items" defaultChecked={isByMeList}
+                    onChange={handleChangeListType}/>
             <TopHeaderRight>
                 <ListTypeIcon
                     className={isTableView ? "bx bx-list-ul" : "bx bx-table"}
