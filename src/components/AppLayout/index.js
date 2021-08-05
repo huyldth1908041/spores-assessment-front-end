@@ -80,7 +80,7 @@ export default function AppLayout({children}) {
                                     {children}
                                 </ChildrenWrapper>
                             </ContentStyled>
-                            <Footer style={{textAlign: 'center'}}>Ant Design ©2018 Created by Ant UED</Footer>
+                            <Footer style={{textAlign: 'center'}}>Spores internship assessment project</Footer>
                         </Layout>
 
                     </LayoutStyled>

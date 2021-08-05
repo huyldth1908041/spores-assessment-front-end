@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import {Image} from "antd";
+import {useRouter} from "next/router";
 
 const Container = styled.div`
   cursor: pointer;
@@ -59,8 +60,11 @@ const PricePanel = styled.div`
 `
 
 const AssetCard = ({asset}) => {
+    const router = useRouter()
     return (
-        <Container>
+        <Container onClick={() => {
+            router.push("/nft-items/".concat(asset.key))
+        }}>
             <CardImg
                 src={asset.image}
                 preview={false}

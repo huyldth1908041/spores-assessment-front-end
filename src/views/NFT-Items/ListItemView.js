@@ -2,11 +2,16 @@ import PageHeader from "../../components/PageHeader";
 import styled from "styled-components";
 import PageContainer from "../../components/PageContainer";
 import SearchBar from "../../components/SearchBar";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Table from "../../components/Table"
-import {listNFTItems, NFTItemsFields} from "./config";
+import {NFTItemsFields} from "./config";
 import AssetCard from "../../components/AssetCard";
-import {Col, Row} from "antd";
+import {Col, Pagination, Row} from "antd";
+import {toast} from "react-hot-toast";
+import {getLocalStorageObject} from "../../utils";
+import itemsApi from "../../service/itemsApi";
+import {useRouter} from "next/router";
+
 const TopHeader = styled.div`
   width: 100%;
   height: 70px;
@@ -34,8 +39,38 @@ const ListItemContainer = styled.div`
 const StyledCol = styled(Col)`
   margin-bottom: 10px;
 `
+const PaginationContainer = styled.div`
+  width: 100%;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+`
 const ListItemView = () => {
     const [isTableView, setIsTableView] = useState(true)
+    const [totalItems, setTotalItems] = useState(1)
+    const [listItems, setListItems] = useState([]);
+    const router = useRouter()
+    const onChange = async (page, pageSize) => {
+        await router.push(`/nft-items?limit=${pageSize}&page=${page}`)
+    }
+    useEffect(() => {
+        const tokenData = getLocalStorageObject("token")
+        const params = router.query.limit ? router.query : {limit: 8, page: 1}
+        itemsApi.getListItems(tokenData.token, params).then(res => {
+            const list = res.data.items.map(item => {
+                const newItem = {
+                    ...item,
+                    key: item.id,
+                }
+                delete item.id
+                return newItem;
+            })
+            setListItems(list)
+            setTotalItems(res.data.totalRows)
+        }).catch(err => {
+            toast.error(err.message)
+        })
+    }, [router])
     const toggleListType = () => {
         setIsTableView(!isTableView)
     }
@@ -61,16 +96,15 @@ const ListItemView = () => {
             {
                 isTableView ? (
                     <Table
-                        data={listNFTItems}
+                        data={listItems}
                         columns={NFTItemsFields}
                         selectionType="checkbox"
                         width="100%"
                         onRowSelectionChange={onRowSelectionChange}
-                        pagination={["bottomRight"]}
                     />
                 ) : (
                     <Row gutter={24}>
-                        {listNFTItems.map(item => {
+                        {listItems.map(item => {
                             return (
                                 <StyledCol key={item.key} span={6}>
                                     <AssetCard asset={item}/>
@@ -81,6 +115,9 @@ const ListItemView = () => {
                 )
             }
         </ListItemContainer>
+        <PaginationContainer>
+            <Pagination onChange={onChange} total={totalItems} pageSize={8} defaultCurrent={router.query.page || 1}/>
+        </PaginationContainer>
     </PageContainer>
 }
 export default ListItemView

@@ -1,6 +1,7 @@
 import {Badge, Image} from "antd";
 import moment from "moment";
 import styled from "styled-components";
+import Link from "next/link"
 
 const StatusBadge = styled.span`
   display: inline-block;
@@ -14,97 +15,6 @@ const ActionIcon = styled.i`
   font-size: 2rem;
   margin-right: 10px;
 `
-export const listNFTItems = [
-    {
-        key: '1',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "pending",
-        creator: "Luu Huy"
-    },
-
-    {
-        key: '2',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "pending",
-        creator: "Luu Huy"
-    },
-    {
-        key: '3',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "pending",
-        creator: "Luu Huy"
-    },
-    {
-        key: '4',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "pending",
-        creator: "Luu Huy"
-    },
-    {
-        key: '5',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "success",
-        creator: "Luu Huy"
-    },
-    {
-        key: '6',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "success",
-        creator: "Luu Huy"
-    },
-    {
-        key: '7',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "success",
-        creator: "Luu Huy"
-    },
-    {
-        key: '8',
-        name: 'Outer Space',
-        image: "https://i.pinimg.com/originals/33/8c/d9/338cd9414b5d71a402475eed025de609.gif",
-        price: '2.99',
-        currency: 'WETH',
-        owner: "Huy",
-        createdAt: moment("2021-07-20").format('MM DD YYYY, hh:mm:ss'),
-        status: "success",
-        creator: "Luu Huy"
-    },
-]
 
 export const NFTItemsFields = [
     {
@@ -131,23 +41,12 @@ export const NFTItemsFields = [
         key: 'currency',
     },
 
-    {
-        title: 'Owner',
-        dataIndex: 'owner',
-        key: 'Creator',
-    },
 
     {
         title: 'Creator',
         dataIndex: 'creator',
         key: 'creator',
     },
-    {
-        title: 'Create time',
-        dataIndex: 'createdAt',
-        key: 'createdAt',
-    },
-
     {
         title: 'Status',
         dataIndex: 'status',
@@ -164,9 +63,11 @@ export const NFTItemsFields = [
         key: 'actions',
         render: (text, record) => (
             <span>
-                <a title="Details"><ActionIcon className="bx bx-info-circle"/></a>
-                <a title="Delete"><ActionIcon className="bx bx-trash"/></a>
+                <Link href={"/nft-items/".concat(record.key)}>
+                    <a title="Details"><ActionIcon className="bx bx-info-circle"/></a>
+                </Link>
              </span>
         ),
     },
 ];
+
