@@ -100,7 +100,7 @@ const ItemDetailsView = () => {
     const {id} = router.query
     const [item, setItem] = useState({})
     const [isOwner, setIsOwner] = useState(false)
-    useEffect(() => {
+    useEffect(() => {o
         const tokenData = getLocalStorageObject("token")
         if (!id) {
             return
