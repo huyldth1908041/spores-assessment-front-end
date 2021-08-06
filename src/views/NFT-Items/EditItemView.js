@@ -12,6 +12,7 @@ import PageHeader from "../../components/PageHeader";
 import {Col, DatePicker, Form, Image, Input, InputNumber, Radio, Row, Select, Upload} from "antd";
 import styled from "styled-components";
 import itemsApi from "../../service/itemsApi";
+import useToken from "../../hooks/useToken";
 
 const {RangePicker} = DatePicker
 
@@ -219,7 +220,7 @@ const EditItemView = () => {
                 form.resetFields()
                 setImage("");
                 resolve(res)
-                await router.push("/nft-items")
+                await router.push(`/nft-items/${id}`)
             } catch (err) {
                 reject(err.message)
             } finally {

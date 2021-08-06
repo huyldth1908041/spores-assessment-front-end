@@ -2,7 +2,7 @@ import styled from "styled-components";
 import {Col, Form, Image, Input, InputNumber, Row, Upload, Select, Radio, DatePicker} from "antd";
 import useForm from "antd/lib/form/hooks/useForm";
 import {useState} from "react";
-import {getBase64} from "../../utils";
+import {getBase64, getDateAfterToday} from "../../utils";
 import {toast} from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
 import PageContainer from "../../components/PageContainer";
@@ -147,7 +147,7 @@ const CreateItemView = () => {
     const [file, setFile] = useState();
     const [image, setImage] = useState();
     const [uploadedImgUrl, setUploadedImgUrl] = useState()
-    const [pricingType, setPricingType] = useState("fixed")
+    const [pricingType, setPricingType] = useState("Fixed")
     const {createNewItem} = useItemsApi()
     const [isExec, setIsExec] = useState(false)
     const onFinish = async (values) => {
@@ -168,10 +168,10 @@ const CreateItemView = () => {
                     image: uploadedImgUrl.imgUrl,
                     type: pricingType,
                 }
-                if (pricingType === "auction") {
+                if (pricingType === "Auction") {
                     data.create_auction_input = {
                         initial_price: values.price,
-                        end_at: values.auctionTime[1].valueOf()
+                        end_at: getDateAfterToday(values.auctionTime[1])
                     }
                 }
                 const res = await createNewItem(data)
@@ -189,7 +189,7 @@ const CreateItemView = () => {
 
         await toast.promise(createItemPromise, {
             loading: 'Saving new items...',
-            success: (res) => `Saved item ${res.data.name} success !`,
+            success: (res) => `Saved item success !`,
             error:  (err) => `Create item failed: ${err.toString()} !`
         });
 
@@ -274,17 +274,17 @@ const CreateItemView = () => {
                         <ItemTypeContainer>
                             <FormTitle>Chose sale type</FormTitle>
                             <Radio.Group
-                                defaultValue="fixed"
+                                defaultValue="Fixed"
                                 buttonStyle="solid"
                                 onChange={handleChangePricingType}
                             >
-                                <StyledRadioButton value="fixed">Fixed price</StyledRadioButton>
-                                <StyledRadioButton value="auction">Unlimited auction</StyledRadioButton>
+                                <StyledRadioButton value="Fixed">Fixed price</StyledRadioButton>
+                                <StyledRadioButton value="Auction">Unlimited auction</StyledRadioButton>
                             </Radio.Group>
                         </ItemTypeContainer>
                     </StyledCol>
                     <StyledCol span={24}>
-                        <FormTitle>{pricingType === "fixed" ? "Pricing" : "Initial pricing"}</FormTitle>
+                        <FormTitle>{pricingType === "Fixed" ? "Pricing" : "Initial pricing"}</FormTitle>
                     </StyledCol>
                     <StyledCol xl={12}>
                         <Form.Item
@@ -296,7 +296,7 @@ const CreateItemView = () => {
                         >
                             <StyledInputNumber
                                 type="text"
-                                placeholder={pricingType === "fixed" ? "Price" : "Min Price"}/>
+                                placeholder={pricingType === "Fixed" ? "Price" : "Min Price"}/>
                         </Form.Item>
                     </StyledCol>
                     <StyledCol xl={12}>
@@ -319,7 +319,7 @@ const CreateItemView = () => {
                         </Form.Item>
                     </StyledCol>
 
-                    {pricingType === "auction" && (
+                    {pricingType === "Auction" && (
                         <StyledCol xl={12}>
                             <FormTitle>Auction Time</FormTitle>
                             <Form.Item

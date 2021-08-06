@@ -30,7 +30,15 @@ const useItemsApi = () => {
         return await itemsApi.deleteItem(tokenData.token, id)
     }, [tokenData])
 
-    return {createNewItem, getAllItems, getCreatedByMeItems, getItemDetails, updateItem, deleteItem}
+    const buyItem = useCallback(async (id) => {
+        return await itemsApi.buyAnItem(tokenData.token, id)
+    }, [tokenData])
+
+    const getItemTx = useCallback(async (id) => {
+        return await itemsApi.getItemTransactions(tokenData.token, id)
+    }, [tokenData])
+
+    return {createNewItem, getAllItems, getCreatedByMeItems, getItemDetails, updateItem, deleteItem, buyItem, getItemTx}
 }
 
 export default useItemsApi
