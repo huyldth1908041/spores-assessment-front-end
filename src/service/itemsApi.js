@@ -28,7 +28,17 @@ const itemsApi = {
     deleteItem: async (token, id) => {
         const url = `/items/${id}`
         return await axiosClient.delete(url, {headers: {Authorization: token}})
-    }
+    },
+
+    getItemTransactions: async (token, id) => {
+        const url = `/items/${id}/transactions`
+        return await axiosClient.get(url, {headers: {Authorization: token}})
+    },
+
+    buyAnItem: async (token, id) => {
+        const url = `/items/${id}/buy`
+        return await axiosClient.post(url, null,{headers: {Authorization: token}})
+    },
 
 }
 

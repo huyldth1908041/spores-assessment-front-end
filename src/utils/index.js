@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export const getBase64 = (file, callback) => {
     const reader = new FileReader();
     reader.addEventListener('load', () => callback(reader.result));
@@ -6,7 +8,7 @@ export const getBase64 = (file, callback) => {
 
 export const getLocalStorageObject = (key) => {
     const objString = window.localStorage.getItem(key)
-    if(!objString) {
+    if (!objString) {
         return null
     }
     return JSON.parse(objString)
@@ -15,10 +17,10 @@ export const getLocalStorageObject = (key) => {
 export const addItemToLocalStorage = (key, item) => {
     //Stringify items object then add to localStorage
     const existItem = localStorage.getItem(key)
-    if(existItem) {
+    if (existItem) {
         removeItemFromLocalStorage(key)
     }
-    if(typeof item !== "object") {
+    if (typeof item !== "object") {
         localStorage.setItem(key, item)
         return
     }
@@ -27,8 +29,26 @@ export const addItemToLocalStorage = (key, item) => {
 
 export const removeItemFromLocalStorage = (key) => {
     const inLocalStorage = localStorage.getItem(key)
-    if(!inLocalStorage) {
+    if (!inLocalStorage) {
         return
     }
     localStorage.removeItem(key)
+}
+
+export const getDateBeforeToday = (momentDate) => {
+    const timeInMls = moment().valueOf() - momentDate.valueOf();
+    if (timeInMls < 0) {
+        return -1
+    }
+    const duration = moment.duration(timeInMls, 'millisecond');
+    return parseInt(duration.asDays().toString())
+}
+
+export const getDateAfterToday = (momentDate) => {
+    const timeInMls = momentDate.valueOf() - moment().valueOf();
+    if (timeInMls < 0) {
+        return -1
+    }
+    const duration = moment.duration(timeInMls, 'millisecond');
+    return parseInt(duration.asDays().toString())
 }

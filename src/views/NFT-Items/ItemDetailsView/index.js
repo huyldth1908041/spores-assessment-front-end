@@ -5,29 +5,18 @@ import styled from "styled-components";
 import moment from "moment";
 import {useEffect, useState} from "react";
 import itemsApi from "../../../service/itemsApi";
-import {getLocalStorageObject} from "../../../utils";
+import {getDateBeforeToday, getLocalStorageObject} from "../../../utils";
 import {toast} from "react-hot-toast";
 import useItemsApi from "../../../hooks/useItemsApi";
 
-const mockData = {
-    "id": 1,
-    "name": "Floating Stars",
-    "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy",
-    "price": 20.2,
-    "currency": "WETH",
-    "owner": "luuhuyulei@gmail.com",
-    "creator": "luuhuyulei@gmail.com",
-    "metadata": "localhost:8080/items/1",
-    "status": "Pending",
-    "type": "auction",
-    "image": "https://firebasestorage.googleapis.com/v0/b/spores-internship.appspot.com/o/images%2F1.gif?alt=media&token=0c5f7b8f-cd73-4e03-868c-58305d4b6022",
-    "created_at": "2021-08-03T10:03:20.561272+07:00",
-    "updated_at": "2021-08-03T10:03:20.572287+07:00"
-}
 
-const Wrapper = styled.div`
+const Container = styled.div`
   width: 100%;
-  margin: 0 auto;
+  background: #fff;
+  padding: 10px;
+`
+const ItemContainer = styled.div`
+  width: 100%;
   background: #efefef;
   min-height: 300px;
   padding: 15px;
@@ -100,42 +89,87 @@ const CenterDiv = styled.div`
   min-height: 400px;
 `
 
+const ItemHistory = styled.div`
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+`
+const HistoryTitle = styled.h1`
+  font-size: 20px;
+  font-weight: bold;
+`
+const HistoryBadge = styled.div`
+  width: 100%;
+  height: 90px;
+  padding: 15px;
+  border-radius: 35px;
+  background: #efefef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+`
+
+const HistoryContent = styled.div`
+  padding: 10px;
+  font-size: 16px;
+
+  > div:nth-child(1) {
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+`
+const HistoryTime = styled.div`
+  font-size: 13px;
+  padding-right: 10px;
+`
+
+const TimeIcon = styled.i`
+  font-size: 1rem;
+  margin-right: 10px;
+  color: #949496;
+`
+
+const FlexContainer = styled.div`
+  display: flex;
+`
 const ItemDetailsView = () => {
     const router = useRouter()
     const {id} = router.query
     const [item, setItem] = useState({})
+    const [itemTransactions, setItemsTransactions] = useState([])
     const [isOwner, setIsOwner] = useState(false)
     const [visible, setVisible] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
+    const {buyItem} = useItemsApi()
     const {deleteItem} = useItemsApi()
     const showModal = () => {
         setVisible(true);
     };
 
-    const handleOk =async () => {
-       try {
-           setConfirmLoading(true)
-           const res = await deleteItem(id)
-           if(res.status === true) {
-               toast.success("Delete item success")
-               await router.push("/nft-items")
-           }
-       } catch (err) {
+    const handleOk = async () => {
+        try {
+            setConfirmLoading(true)
+            const res = await deleteItem(id)
+            if (res.status === true) {
+                toast.success("Delete item success")
+                await router.push("/nft-items")
+            }
+        } catch (err) {
             toast.error(err.message)
-       } finally {
-           setConfirmLoading(false)
-           setVisible(false)
-       }
+        } finally {
+            setConfirmLoading(false)
+            setVisible(false)
+        }
     };
 
     const handleCancel = () => {
         setVisible(false);
     };
-    useEffect(() => {
+
+    const fetchItem = (id) => {
         const tokenData = getLocalStorageObject("token")
-        if (!id) {
-            return
-        }
         itemsApi.getItemById(tokenData.token, id).then(res => {
             setItem(res.data)
             setIsOwner(res.data.owner === tokenData.email)
@@ -143,101 +177,184 @@ const ItemDetailsView = () => {
             setItem({})
             toast.error("Fetch Item failed: " + err.message)
         })
+    }
+
+    const fetchTransactions = (id) => {
+        const tokenData = getLocalStorageObject("token")
+        itemsApi.getItemTransactions(tokenData.token, id).then(res => {
+            setItemsTransactions(res.data.transactions)
+        }).catch(err => {
+            setItemsTransactions([])
+            toast.error("Fetch item transactions failed: " + err.message)
+        })
+    }
+    useEffect(() => {
+        if(!id) {
+            return
+        }
+        fetchItem(id)
+        fetchTransactions(id)
+
     }, [id])
+
+    const handleBuyItem = async () => {
+        const buyItemPromise = new Promise(async (resolve, reject) => {
+            try {
+                const buyResult = await buyItem(id)
+                resolve(buyResult.data)
+            } catch (err) {
+                reject(err.message)
+            }
+        })
+
+        await toast.promise(buyItemPromise, {
+            loading: 'Buying items...',
+            success: (res) => `Bought Items success with ${res.price} ${item.currency}`,
+            error: (err) => `Bought item failed: ${err.toString()} !`
+        });
+        //re fetch item data
+        fetchItem(id)
+        fetchTransactions(id)
+    }
     return (
         <PageContainer>
             {
                 item.name ? (
-                    <Wrapper>
-                        <Row gutter={24}>
-                            <CenterItemCol span={12}>
-                                <Image
-                                    src={item.image}
-                                    alt={item.name}
-                                    width="100%"
-                                    height="430px"
-                                />
-                            </CenterItemCol>
-                            <Col span={12}>
-                                <Row>
-                                    <Col span={24}>
-                                        <ItemName>{item.name}</ItemName>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={12}>
-                                        <ItemBadge>
-                                            <ItemBadgeTitle>Status</ItemBadgeTitle>
-                                            <ItemBadgeContent>{item.status}</ItemBadgeContent>
-                                        </ItemBadge>
-                                    </Col>
-
-                                    <Col span={12}>
-                                        <ItemBadge>
+                    <Container>
+                        <ItemContainer>
+                            <Row gutter={24}>
+                                <CenterItemCol span={12}>
+                                    <Image
+                                        src={item.image}
+                                        alt={item.name}
+                                        width="100%"
+                                        height="430px"
+                                    />
+                                </CenterItemCol>
+                                <Col span={12}>
+                                    <Row>
+                                        <Col span={24}>
+                                            <ItemName>{item.name}</ItemName>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col span={12}>
                                             <ItemBadge>
-                                                <ItemBadgeTitle>Created</ItemBadgeTitle>
-                                                <ItemBadgeContent>{moment(item.created_at).format("DD MMM YYYY")}</ItemBadgeContent>
+                                                <ItemBadgeTitle>Status</ItemBadgeTitle>
+                                                <ItemBadgeContent>{item.status}</ItemBadgeContent>
                                             </ItemBadge>
-                                        </ItemBadge>
-                                    </Col>
+                                        </Col>
 
-                                    <Col span={12}>
-                                        <ItemBadge>
+                                        <Col span={12}>
                                             <ItemBadge>
-                                                <ItemBadgeTitle>Creator</ItemBadgeTitle>
-                                                <ItemBadgeContent>{item.creator}</ItemBadgeContent>
+                                                <ItemBadge>
+                                                    <ItemBadgeTitle>Created</ItemBadgeTitle>
+                                                    <ItemBadgeContent>{moment(item.created_at).format("DD MMM YYYY")}</ItemBadgeContent>
+                                                </ItemBadge>
                                             </ItemBadge>
-                                        </ItemBadge>
-                                    </Col>
+                                        </Col>
 
-                                    <Col span={12}>
-                                        <ItemBadge>
+                                        <Col span={12}>
                                             <ItemBadge>
-                                                <ItemBadgeTitle>Owner</ItemBadgeTitle>
-                                                <ItemBadgeContent>{item.owner}</ItemBadgeContent>
+                                                <ItemBadge>
+                                                    <ItemBadgeTitle>Creator</ItemBadgeTitle>
+                                                    <ItemBadgeContent>{item.creator}</ItemBadgeContent>
+                                                </ItemBadge>
                                             </ItemBadge>
-                                        </ItemBadge>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col span={24}>
-                                        <ItemDescription>
-                                            {item.description}
-                                        </ItemDescription>
-                                    </Col>
-                                </Row>
-                                <ItemFooter>
-                                    <Col span={12}>
-                                        <PricePanel>
-                                            <h1>Price</h1>
-                                            <div>{item.price} {item.currency}</div>
-                                        </PricePanel>
-                                    </Col>
-                                    <Col span={12}>
-                                        {isOwner ? (
-                                            <>
-                                                <ActionButton onClick={() => showModal()}>Delete</ActionButton>
-                                                <Modal
-                                                    title="Delete confirmation"
-                                                    visible={visible}
-                                                    onOk={handleOk}
-                                                    confirmLoading={confirmLoading}
-                                                    onCancel={handleCancel}
-                                                >
-                                                    <p>Do you really want to delete this items</p>
-                                                </Modal>
-                                                <ActionButton onClick={() => {
-                                                    router.push(`/nft-items/edit/${id}`)
-                                                }}>Edit</ActionButton>
-                                            </>
-                                        ) : (
-                                            <ActionButton>Buy</ActionButton>
-                                        )}
-                                    </Col>
-                                </ItemFooter>
-                            </Col>
-                        </Row>
-                    </Wrapper>
+                                        </Col>
+
+                                        <Col span={12}>
+                                            <ItemBadge>
+                                                <ItemBadge>
+                                                    <ItemBadgeTitle>Owner</ItemBadgeTitle>
+                                                    <ItemBadgeContent>{item.owner}</ItemBadgeContent>
+                                                </ItemBadge>
+                                            </ItemBadge>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col span={24}>
+                                            <ItemDescription>
+                                                {item.description}
+                                            </ItemDescription>
+                                        </Col>
+                                    </Row>
+                                    <ItemFooter>
+                                        <Col span={12}>
+                                            <PricePanel>
+                                                <h1>Price</h1>
+                                                <div>{item.price} {item.currency}</div>
+                                            </PricePanel>
+                                        </Col>
+                                        <Col span={12}>
+                                            {isOwner ? (
+                                                <FlexContainer>
+                                                    <ActionButton onClick={() => showModal()}>Delete</ActionButton>
+                                                    <Modal
+                                                        title="Delete confirmation"
+                                                        visible={visible}
+                                                        onOk={handleOk}
+                                                        confirmLoading={confirmLoading}
+                                                        onCancel={handleCancel}
+                                                    >
+                                                        <p>Do you really want to delete this items</p>
+                                                    </Modal>
+                                                    <ActionButton onClick={() => {
+                                                        router.push(`/nft-items/edit/${id}`)
+                                                    }}>Edit</ActionButton>
+                                                </FlexContainer>
+                                            ) : (
+                                                <ActionButton onClick={handleBuyItem}>Buy</ActionButton>
+                                            )}
+                                        </Col>
+                                    </ItemFooter>
+                                </Col>
+                            </Row>
+                        </ItemContainer>
+                        <ItemHistory>
+                            <HistoryTitle>History</HistoryTitle>
+                            <Row gutter={24}>
+                                {
+                                    itemTransactions.map(tx => {
+                                        return (
+                                            <Col span={12} key={tx.tx_hash}>
+                                                <HistoryBadge>
+                                                    <HistoryContent>
+                                                        <div>
+                                                            Buy for {tx.price}
+                                                        </div>
+                                                        <div>
+                                                            by {tx.buyer}
+                                                        </div>
+                                                    </HistoryContent>
+                                                    <HistoryTime>
+                                                        <TimeIcon className='bx bxs-calendar'/>
+                                                        {getDateBeforeToday(moment(tx.created_at))} days ago
+                                                    </HistoryTime>
+                                                </HistoryBadge>
+                                            </Col>
+                                        )
+                                    })
+                                }
+                                <Col span={12}>
+                                    <HistoryBadge>
+                                        <HistoryContent>
+                                            <div>
+                                                Created
+                                            </div>
+                                            <div>
+                                                by {item.creator}
+                                            </div>
+                                        </HistoryContent>
+                                        <HistoryTime>
+                                            <TimeIcon className='bx bxs-calendar'/>
+                                            {getDateBeforeToday(moment(item.created_at))} days ago
+                                        </HistoryTime>
+                                    </HistoryBadge>
+                                </Col>
+                            </Row>
+                        </ItemHistory>
+                    </Container>
                 ) : (
                     <CenterDiv>404 Not Found</CenterDiv>
                 )
