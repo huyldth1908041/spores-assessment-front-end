@@ -1,12 +1,13 @@
 import {useRouter} from "next/router";
 import PageContainer from "../../../components/PageContainer";
-import {Col, Image, Row} from "antd";
+import {Col, Image, Modal, Row} from "antd";
 import styled from "styled-components";
 import moment from "moment";
 import {useEffect, useState} from "react";
 import itemsApi from "../../../service/itemsApi";
 import {getLocalStorageObject} from "../../../utils";
 import {toast} from "react-hot-toast";
+import useItemsApi from "../../../hooks/useItemsApi";
 
 const mockData = {
     "id": 1,
@@ -47,6 +48,10 @@ const ItemBadgeTitle = styled.div`
 `
 const ItemBadgeContent = styled.div`
   font-weight: 600;
+  width: 200px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;;
 `
 const ItemDescription = styled.div`
   width: 100%;
@@ -100,7 +105,33 @@ const ItemDetailsView = () => {
     const {id} = router.query
     const [item, setItem] = useState({})
     const [isOwner, setIsOwner] = useState(false)
-    useEffect(() => {o
+    const [visible, setVisible] = useState(false);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const {deleteItem} = useItemsApi()
+    const showModal = () => {
+        setVisible(true);
+    };
+
+    const handleOk =async () => {
+       try {
+           setConfirmLoading(true)
+           const res = await deleteItem(id)
+           if(res.status === true) {
+               toast.success("Delete item success")
+               await router.push("/nft-items")
+           }
+       } catch (err) {
+            toast.error(err.message)
+       } finally {
+           setConfirmLoading(false)
+           setVisible(false)
+       }
+    };
+
+    const handleCancel = () => {
+        setVisible(false);
+    };
+    useEffect(() => {
         const tokenData = getLocalStorageObject("token")
         if (!id) {
             return
@@ -185,8 +216,19 @@ const ItemDetailsView = () => {
                                     <Col span={12}>
                                         {isOwner ? (
                                             <>
-                                                <ActionButton>Delete</ActionButton>
-                                                <ActionButton>Edit</ActionButton>
+                                                <ActionButton onClick={() => showModal()}>Delete</ActionButton>
+                                                <Modal
+                                                    title="Delete confirmation"
+                                                    visible={visible}
+                                                    onOk={handleOk}
+                                                    confirmLoading={confirmLoading}
+                                                    onCancel={handleCancel}
+                                                >
+                                                    <p>Do you really want to delete this items</p>
+                                                </Modal>
+                                                <ActionButton onClick={() => {
+                                                    router.push(`/nft-items/edit/${id}`)
+                                                }}>Edit</ActionButton>
                                             </>
                                         ) : (
                                             <ActionButton>Buy</ActionButton>
