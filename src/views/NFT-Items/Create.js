@@ -1,17 +1,16 @@
 import styled from "styled-components";
-import {Col, Form, Image, Input, InputNumber, Row, Upload, Select, Radio, DatePicker} from "antd";
+import {Col, Form, Image, Input, InputNumber, Row, Upload, Select, Radio, DatePicker, Checkbox} from "antd";
 import useForm from "antd/lib/form/hooks/useForm";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {getBase64, getDateAfterToday} from "../../utils";
 import {toast} from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
 import PageContainer from "../../components/PageContainer";
 import moment from "moment";
-import useToken from "../../hooks/useToken";
 import Fire from "../../service/fire";
-import itemsApi from "../../service/itemsApi";
 import useItemsApi from "../../hooks/useItemsApi";
 import {ALLOWED_TYPES} from "./config";
+import {useRouter} from "next/router";
 
 const {RangePicker} = DatePicker
 const StyledCol = styled(Col)`
@@ -142,14 +141,27 @@ const StyledRangePicker = styled(RangePicker)`
   border-radius: 10px;
 `
 
+const StyledCheckBox = styled(Checkbox)`
+  font-size: 16px !important;
+  font-weight: 600;
+`
+
 const CreateItemView = () => {
     const [form] = useForm();
     const [file, setFile] = useState();
     const [image, setImage] = useState();
     const [uploadedImgUrl, setUploadedImgUrl] = useState()
     const [pricingType, setPricingType] = useState("Fixed")
-    const {createNewItem} = useItemsApi()
+    const {createNewItem, putItemOnMarket} = useItemsApi()
     const [isExec, setIsExec] = useState(false)
+    const router =useRouter()
+    useEffect(() => {
+        const query = router.query
+        if(query.mode === "auction") {
+            setPricingType("Auction")
+        }
+    },[router])
+
     const onFinish = async (values) => {
         const createItemPromise = new Promise(async (resolve, reject) => {
             try {
@@ -175,6 +187,10 @@ const CreateItemView = () => {
                     }
                 }
                 const res = await createNewItem(data)
+                const createdItemId = res.data?.item?.id || res.data.id
+                if(values.isPublic === true) {
+                    await putItemOnMarket(createdItemId)
+                }
                 //reset form values
                 form.resetFields()
                 setImage("");
@@ -187,10 +203,11 @@ const CreateItemView = () => {
             }
         });
 
+
         await toast.promise(createItemPromise, {
             loading: 'Saving new items...',
             success: (res) => `Saved item success !`,
-            error:  (err) => `Create item failed: ${err.toString()} !`
+            error: (err) => `Create item failed: ${err.toString()} !`
         });
 
 
@@ -274,12 +291,12 @@ const CreateItemView = () => {
                         <ItemTypeContainer>
                             <FormTitle>Chose sale type</FormTitle>
                             <Radio.Group
-                                defaultValue="Fixed"
+                                defaultValue="Auction"
                                 buttonStyle="solid"
                                 onChange={handleChangePricingType}
                             >
-                                <StyledRadioButton value="Fixed">Fixed price</StyledRadioButton>
                                 <StyledRadioButton value="Auction">Unlimited auction</StyledRadioButton>
+                                <StyledRadioButton value="Fixed">Fixed price</StyledRadioButton>
                             </Radio.Group>
                         </ItemTypeContainer>
                     </StyledCol>
@@ -333,6 +350,14 @@ const CreateItemView = () => {
                         </StyledCol>
                     )}
                 </Row>
+                <Row>
+                    <StyledCol span={24}>
+                        <Form.Item name="isPublic" valuePropName="checked">
+                            <StyledCheckBox>I want to put this item on market</StyledCheckBox>
+                        </Form.Item>
+                    </StyledCol>
+                </Row>
+
                 <Form.Item>
                     <SubmitButton type="submit" disable={isExec}>
                         {isExec ? "Saving..." : "Create"}

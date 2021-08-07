@@ -6,7 +6,7 @@ import {useEffect, useState} from "react";
 import Table from "../../components/Table"
 import {NFTItemsFields} from "./config";
 import AssetCard from "../../components/AssetCard";
-import {Col, Pagination, Row, Switch} from "antd";
+import {Col, Pagination, Row, Radio} from "antd";
 import {toast} from "react-hot-toast";
 import {useRouter} from "next/router";
 import useItemsApi from "../../hooks/useItemsApi";
@@ -44,24 +44,49 @@ const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
 `
+
+const StyledRadioButton = styled(Radio.Button)`
+  margin-right: 10px;
+  width: 150px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  font-size: 16px !important;
+  border: 1px solid #111;
+  border-radius: 15px !important;
+
+  &.ant-radio-button-wrapper-checked {
+    //  border-left: none !important;
+    background-image: linear-gradient(to right, #349eff, #62b4ff) !important;
+  }
+
+  &:hover {
+    color: black;
+  }
+
+  &:not(:first-child)::before {
+    display: none;
+  }
+
+  &:first-child {
+    border: 1px solid #111;
+  }
+`
 const ListItemView = () => {
     const [isTableView, setIsTableView] = useState(true)
     const [totalItems, setTotalItems] = useState(1)
     const [listItems, setListItems] = useState([]);
-    const [isByMeList, setIsByMeList] = useState(false)
+    const [itemType, setItemType] = useState("public")
     const router = useRouter()
-    const {getCreatedByMeItems, getAllItems} = useItemsApi()
+    const {getPrivateItems, getPublicItems} = useItemsApi()
     const onChange = async (page, pageSize) => {
         await router.push(`/nft-items?limit=${pageSize}&page=${page}`)
     }
-    const handleChangeListType = (checked) => {
-        setIsByMeList(checked)
-    }
+
     useEffect(() => {
         const params = router.query.limit ? router.query : {limit: 8, page: 1}
-        if (isByMeList) {
-            console.log("is by me")
-            getCreatedByMeItems(params).then(res => {
+        if (itemType === "private") {
+            getPrivateItems(params).then(res => {
                 const list = res.data.items.map(item => {
                     const newItem = {
                         ...item,
@@ -76,7 +101,7 @@ const ListItemView = () => {
                 toast.error(err.message)
             })
         } else {
-            getAllItems(params).then(res => {
+            getPublicItems(params).then(res => {
                 const list = res.data.items.map(item => {
                     const newItem = {
                         ...item,
@@ -91,7 +116,7 @@ const ListItemView = () => {
                 toast.error(err.message)
             })
         }
-    }, [router, getAllItems, isByMeList])
+    }, [router, getPublicItems, itemType])
     const toggleListType = () => {
         setIsTableView(!isTableView)
     }
@@ -105,8 +130,10 @@ const ListItemView = () => {
         <PageHeader title="List Item"/>
         <TopHeader>
             <SearchBar placeholderText="Search items..." onSearch={handleSearch}/>
-            <Switch checkedChildren="By me" unCheckedChildren="All items" defaultChecked={isByMeList}
-                    onChange={handleChangeListType}/>
+            <Radio.Group defaultValue={itemType} buttonStyle="solid" onChange={(e) => setItemType(e.target.value)}>
+                <StyledRadioButton value="public">Public Items</StyledRadioButton>
+                <StyledRadioButton value="private">Private Items</StyledRadioButton>
+            </Radio.Group>
             <TopHeaderRight>
                 <ListTypeIcon
                     className={isTableView ? "bx bx-list-ul" : "bx bx-table"}

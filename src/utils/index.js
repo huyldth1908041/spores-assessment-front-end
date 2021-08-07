@@ -41,7 +41,7 @@ export const getDateBeforeToday = (momentDate) => {
         return -1
     }
     const duration = moment.duration(timeInMls, 'millisecond');
-    return parseInt(duration.asDays().toString())
+    return Math.ceil(duration.asDays())
 }
 
 export const getDateAfterToday = (momentDate) => {
@@ -50,5 +50,5 @@ export const getDateAfterToday = (momentDate) => {
         return -1
     }
     const duration = moment.duration(timeInMls, 'millisecond');
-    return parseInt(duration.asDays().toString())
+    return Math.ceil(duration.asDays())
 }

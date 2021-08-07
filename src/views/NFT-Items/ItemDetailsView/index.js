@@ -1,14 +1,17 @@
 import {useRouter} from "next/router";
 import PageContainer from "../../../components/PageContainer";
-import {Col, Image, Modal, Row} from "antd";
+import {Col, Form, Image, Input, InputNumber, Modal, Row, Tabs} from "antd";
 import styled from "styled-components";
 import moment from "moment";
 import {useEffect, useState} from "react";
 import itemsApi from "../../../service/itemsApi";
-import {getDateBeforeToday, getLocalStorageObject} from "../../../utils";
+import {getDateAfterToday, getDateBeforeToday, getLocalStorageObject} from "../../../utils";
 import {toast} from "react-hot-toast";
 import useItemsApi from "../../../hooks/useItemsApi";
+import useForm from "antd/lib/form/hooks/useForm";
+import useAuctionApi from "../../../hooks/useAuctionApi";
 
+const {TabPane} = Tabs;
 
 const Container = styled.div`
   width: 100%;
@@ -60,6 +63,11 @@ const PricePanel = styled.div`
   width: 100%;
   font-weight bold;
   font-size: 22px;
+  div:nth-child(3) {
+    font-weight: normal;
+    font-size: 14px;
+    margin-top: 20px;
+  }
 `
 const CenterItemCol = styled(Col)`
   display: flex;
@@ -76,7 +84,6 @@ const ActionButton = styled.button`
   height: 50px;
   color: #fff;
   border-radius: 15px;
-  float: right;
   font-weight: 600;
   font-size: 16px;
   margin: 0 10px;
@@ -133,20 +140,58 @@ const TimeIcon = styled.i`
 
 const FlexContainer = styled.div`
   display: flex;
+  justify-content: center;
 `
+// const StyledTabs = styled(Tabs)`
+//   margin-top: 50px;
+//   padding-left: 10px;
+//
+//   div.ant-tabs-tab {
+//     font-size: 16px;
+//   }
+// `
+const StyledInputNumber = styled(InputNumber)`
+  border: 1px solid #111;
+  border-radius: 15px;
+  outline: none;
+  height: 50px;
+  padding: 10px 20px;
+  font-weight: 600;
+  width: 100%;
+
+  .ant-input-number-handler-wrap {
+    display: none;
+  }
+
+`
+
+const SubmitButton = styled.button`
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background-image: linear-gradient(to right, #349eff, #62b4ff);
+  padding: 15px 30px;
+  border-radius: 15px;
+  margin: 0 auto;
+  display: block;
+  width: fit-content;
+  color: #fff;
+  font-size: 16px;
+`
+
+
 const ItemDetailsView = () => {
     const router = useRouter()
     const {id} = router.query
-    const [item, setItem] = useState({})
+    const [itemData, setItemData] = useState({auction: null, item: null})
     const [itemTransactions, setItemsTransactions] = useState([])
     const [isOwner, setIsOwner] = useState(false)
-    const [visible, setVisible] = useState(false);
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [showBidForm, setShowBidForm] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
-    const {buyItem} = useItemsApi()
-    const {deleteItem} = useItemsApi()
-    const showModal = () => {
-        setVisible(true);
-    };
+    const {buyItem, deleteItem, putItemOnMarket} = useItemsApi()
+    const {bidAnItem} = useAuctionApi()
+    const [form] = useForm()
 
     const handleOk = async () => {
         try {
@@ -160,21 +205,21 @@ const ItemDetailsView = () => {
             toast.error(err.message)
         } finally {
             setConfirmLoading(false)
-            setVisible(false)
+            setShowConfirmDelete(false)
         }
     };
 
     const handleCancel = () => {
-        setVisible(false);
+        setShowConfirmDelete(false);
     };
 
     const fetchItem = (id) => {
         const tokenData = getLocalStorageObject("token")
         itemsApi.getItemById(tokenData.token, id).then(res => {
-            setItem(res.data)
-            setIsOwner(res.data.owner === tokenData.email)
+            setItemData({...itemData, auction: res.data.auction, item: res.data.item})
+            setIsOwner(res.data.item.owner === tokenData.email)
         }).catch(err => {
-            setItem({})
+            setItemData({auction: null, item: null})
             toast.error("Fetch Item failed: " + err.message)
         })
     }
@@ -189,7 +234,7 @@ const ItemDetailsView = () => {
         })
     }
     useEffect(() => {
-        if(!id) {
+        if (!id) {
             return
         }
         fetchItem(id)
@@ -209,24 +254,80 @@ const ItemDetailsView = () => {
 
         await toast.promise(buyItemPromise, {
             loading: 'Buying items...',
-            success: (res) => `Bought Items success with ${res.price} ${item.currency}`,
+            success: (res) => `Bought Items success`,
             error: (err) => `Bought item failed: ${err.toString()} !`
         });
         //re fetch item data
         fetchItem(id)
         fetchTransactions(id)
     }
+
+    const handlePutOnMarket = async () => {
+        const putItemOnMarketPromise = new Promise(async (resolve, reject) => {
+            try {
+                const res = await putItemOnMarket(id)
+                resolve(res)
+            } catch (err) {
+                reject(err.message)
+            }
+        })
+
+        await toast.promise(putItemOnMarketPromise, {
+            loading: 'Putting item on market...',
+            success: (res) => `Put item on market sucess !`,
+            error: (err) => `Put item on market failed: ${err.toString()} !`
+        });
+        //re fetch item data
+        fetchItem(id)
+        fetchTransactions(id)
+    }
+
+    const handleBidItem = () => {
+        form.submit()
+    }
+    const handleFinishFail = (err) => {
+        toast.error("Check Form value then try again")
+    }
+    const handleFinish = async (values) => {
+        const bidItemPromise = new Promise(async (resolve, reject) => {
+            try {
+                if (!itemData.auction.id) {
+                    reject("Item is not on auction")
+                    return
+                }
+
+                if (values.bidValue <= itemData.auction.final_price) {
+                    reject("Please a bid bigger price than current price")
+                    return
+                }
+                const res = await bidAnItem(itemData.auction.id, values.bidValue)
+                resolve(res)
+                //update and reset
+                fetchItem(id)
+                fetchTransactions(id)
+                form.resetFields()
+                setShowBidForm(false)
+            } catch (err) {
+                reject(err.message)
+            }
+        })
+        await toast.promise(bidItemPromise, {
+            loading: 'Bidding new items...',
+            success: (res) => `Bid item success !`,
+            error: (err) => `Bid item failed: ${err.toString()} !`
+        });
+    }
     return (
         <PageContainer>
             {
-                item.name ? (
+                itemData.item ? (
                     <Container>
                         <ItemContainer>
                             <Row gutter={24}>
                                 <CenterItemCol span={12}>
                                     <Image
-                                        src={item.image}
-                                        alt={item.name}
+                                        src={itemData.item.image}
+                                        alt={itemData.item.name}
                                         width="100%"
                                         height="430px"
                                     />
@@ -234,14 +335,14 @@ const ItemDetailsView = () => {
                                 <Col span={12}>
                                     <Row>
                                         <Col span={24}>
-                                            <ItemName>{item.name}</ItemName>
+                                            <ItemName>{itemData.item.name}</ItemName>
                                         </Col>
                                     </Row>
                                     <Row>
                                         <Col span={12}>
                                             <ItemBadge>
                                                 <ItemBadgeTitle>Status</ItemBadgeTitle>
-                                                <ItemBadgeContent>{item.status}</ItemBadgeContent>
+                                                <ItemBadgeContent>{itemData.item.status}</ItemBadgeContent>
                                             </ItemBadge>
                                         </Col>
 
@@ -249,7 +350,7 @@ const ItemDetailsView = () => {
                                             <ItemBadge>
                                                 <ItemBadge>
                                                     <ItemBadgeTitle>Created</ItemBadgeTitle>
-                                                    <ItemBadgeContent>{moment(item.created_at).format("DD MMM YYYY")}</ItemBadgeContent>
+                                                    <ItemBadgeContent>{moment(itemData.item.created_at).format("DD MMM YYYY")}</ItemBadgeContent>
                                                 </ItemBadge>
                                             </ItemBadge>
                                         </Col>
@@ -258,7 +359,7 @@ const ItemDetailsView = () => {
                                             <ItemBadge>
                                                 <ItemBadge>
                                                     <ItemBadgeTitle>Creator</ItemBadgeTitle>
-                                                    <ItemBadgeContent>{item.creator}</ItemBadgeContent>
+                                                    <ItemBadgeContent>{itemData.item.creator}</ItemBadgeContent>
                                                 </ItemBadge>
                                             </ItemBadge>
                                         </Col>
@@ -267,7 +368,7 @@ const ItemDetailsView = () => {
                                             <ItemBadge>
                                                 <ItemBadge>
                                                     <ItemBadgeTitle>Owner</ItemBadgeTitle>
-                                                    <ItemBadgeContent>{item.owner}</ItemBadgeContent>
+                                                    <ItemBadgeContent>{itemData.item.owner}</ItemBadgeContent>
                                                 </ItemBadge>
                                             </ItemBadge>
                                         </Col>
@@ -275,42 +376,117 @@ const ItemDetailsView = () => {
                                     <Row>
                                         <Col span={24}>
                                             <ItemDescription>
-                                                {item.description}
+                                                {itemData.item.description}
                                             </ItemDescription>
                                         </Col>
                                     </Row>
                                     <ItemFooter>
-                                        <Col span={12}>
+                                        <Col span={8}>
                                             <PricePanel>
-                                                <h1>Price</h1>
-                                                <div>{item.price} {item.currency}</div>
+                                                {itemData.item.type === "Auction" ? (
+                                                    <>
+                                                        <h1>Highest Bid</h1>
+                                                        <div>{itemData.auction.final_price} {itemData.item.currency}</div>
+                                                        <div>Auction end in {getDateAfterToday(moment(itemData.auction.end_at))} days</div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <h1>Price</h1>
+                                                        <div>{itemData.item.price} {itemData.item.currency}</div>
+                                                    </>
+                                                )}
                                             </PricePanel>
                                         </Col>
-                                        <Col span={12}>
+                                        <Col span={16}>
                                             {isOwner ? (
                                                 <FlexContainer>
-                                                    <ActionButton onClick={() => showModal()}>Delete</ActionButton>
+                                                    {
+                                                        itemData.item.status === "Private" && (
+                                                            <ActionButton onClick={handlePutOnMarket}>
+                                                                Public
+                                                            </ActionButton>
+                                                        )
+                                                    }
+                                                    <ActionButton onClick={() => setShowConfirmDelete(true)}
+                                                                  title="Delete">
+                                                        <i className='bx bx-trash'/>
+                                                    </ActionButton>
                                                     <Modal
                                                         title="Delete confirmation"
-                                                        visible={visible}
+                                                        visible={showConfirmDelete}
                                                         onOk={handleOk}
                                                         confirmLoading={confirmLoading}
                                                         onCancel={handleCancel}
                                                     >
                                                         <p>Do you really want to delete this items</p>
                                                     </Modal>
-                                                    <ActionButton onClick={() => {
-                                                        router.push(`/nft-items/edit/${id}`)
-                                                    }}>Edit</ActionButton>
+                                                    <ActionButton
+                                                        onClick={() => {
+                                                            router.push(`/nft-items/edit/${id}`)
+                                                        }}
+                                                        title="Edit"
+                                                    >
+                                                        <i className='bx bx-edit-alt'/>
+                                                    </ActionButton>
                                                 </FlexContainer>
                                             ) : (
-                                                <ActionButton onClick={handleBuyItem}>Buy</ActionButton>
+                                                <FlexContainer>
+                                                    {
+                                                        itemData.item.type === "Auction" ? (
+                                                            <>
+                                                                <ActionButton onClick={() => {
+                                                                    setShowBidForm(true)
+                                                                }}>Bid Now</ActionButton>
+                                                                <Modal
+                                                                    title="Bid Item"
+                                                                    visible={showBidForm}
+                                                                    onOk={handleBidItem}
+                                                                    confirmLoading={confirmLoading}
+                                                                    onCancel={() => setShowBidForm(false)}
+                                                                >
+                                                                    <Form
+                                                                        name="bidForm"
+                                                                        onFinish={handleFinish}
+                                                                        onFinishFailed={handleFinishFail}
+                                                                        form={form}
+                                                                    >
+                                                                        <Form.Item
+                                                                            name="bidValue"
+                                                                            rules={[
+                                                                                {
+                                                                                    required: true,
+                                                                                    message: "Bid value is required"
+                                                                                },
+                                                                                {
+                                                                                    type: "number",
+                                                                                    min: 0,
+                                                                                    message: "Bid Price must be larger than 0"
+                                                                                }
+                                                                            ]}
+                                                                        >
+                                                                            <StyledInputNumber placeholder="Bid value"/>
+                                                                        </Form.Item>
+                                                                        {/*<Form.Item>*/}
+                                                                        {/*    <SubmitButton type="submit">*/}
+                                                                        {/*        Bid Now*/}
+                                                                        {/*    </SubmitButton>*/}
+                                                                        {/*</Form.Item>*/}
+                                                                    </Form>
+                                                                </Modal>
+                                                            </>
+                                                        ) : (
+                                                            <ActionButton onClick={handleBuyItem}>Buy Now</ActionButton>
+                                                        )
+
+                                                    }
+                                                </FlexContainer>
                                             )}
                                         </Col>
                                     </ItemFooter>
                                 </Col>
                             </Row>
                         </ItemContainer>
+
                         <ItemHistory>
                             <HistoryTitle>History</HistoryTitle>
                             <Row gutter={24}>
@@ -321,7 +497,13 @@ const ItemDetailsView = () => {
                                                 <HistoryBadge>
                                                     <HistoryContent>
                                                         <div>
-                                                            Buy for {tx.price}
+                                                            {
+                                                                itemData.item.t === 'Auction' ? (
+                                                                    `Buy for ${tx.price} ${itemData.item.currency}`
+                                                                ) : (
+                                                                    `Bid for ${tx.price} ${itemData.item.currency}`
+                                                                )
+                                                            }
                                                         </div>
                                                         <div>
                                                             by {tx.buyer}
@@ -343,12 +525,12 @@ const ItemDetailsView = () => {
                                                 Created
                                             </div>
                                             <div>
-                                                by {item.creator}
+                                                by {itemData.item.creator}
                                             </div>
                                         </HistoryContent>
                                         <HistoryTime>
                                             <TimeIcon className='bx bxs-calendar'/>
-                                            {getDateBeforeToday(moment(item.created_at))} days ago
+                                            {getDateBeforeToday(moment(itemData.item.created_at))} days ago
                                         </HistoryTime>
                                     </HistoryBadge>
                                 </Col>

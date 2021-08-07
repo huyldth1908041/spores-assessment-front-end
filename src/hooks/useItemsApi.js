@@ -9,12 +9,12 @@ const useItemsApi = () => {
         return await itemsApi.createNewItem(tokenData.token, body)
     }, [tokenData])
 
-    const getAllItems = useCallback(async (params) => {
+    const getPublicItems = useCallback(async (params) => {
         //params to paginate
         return await itemsApi.getPublicListItems(tokenData.token, params)
     }, [tokenData])
 
-    const getCreatedByMeItems = useCallback(async (params) => {
+    const getPrivateItems = useCallback(async (params) => {
         //params to paginate
         return await itemsApi.getPrivateListItems(tokenData.token, params)
     }, [tokenData])
@@ -38,7 +38,20 @@ const useItemsApi = () => {
         return await itemsApi.getItemTransactions(tokenData.token, id)
     }, [tokenData])
 
-    return {createNewItem, getAllItems, getCreatedByMeItems, getItemDetails, updateItem, deleteItem, buyItem, getItemTx}
+    const putItemOnMarket = useCallback(async (id) => {
+        return await itemsApi.publicItemOnMarket(tokenData.token, id)
+    }, [tokenData])
+    return {
+        createNewItem,
+        getPublicItems,
+        getPrivateItems,
+        getItemDetails,
+        updateItem,
+        deleteItem,
+        buyItem,
+        getItemTx,
+        putItemOnMarket
+    }
 }
 
 export default useItemsApi
