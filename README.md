@@ -1,9 +1,13 @@
 Spores Assesssment Front End
 Demo App is running at: https://spores-assessment-front-end.vercel.app/
 
+API is running at: http://34.126.65.139:8080
+
 API belongs to https://github.com/AnhHoangQuach
 
 API Source code: https://github.com/AnhHoangQuach/go-intern-spores
+
+
 
 ## Getting Started
 
