@@ -28,4 +28,19 @@ export const menuItems = [
             }
         ]
     },
+
+    {
+        title: "Auction",
+        href: "/auction",
+        icon: "bx bx-shopping-bag",
+        subMenus: [
+            {
+                title: "Create Auction",
+                href: "/nft-items/create?mode=auction",
+                icon: "bx bx-add-to-queue",
+                subMenus: [],
+            },
+
+        ]
+    },
 ]

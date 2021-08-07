@@ -1,1 +1,1 @@
-export const API_ROUTE = process.env.NEXT_PUBLIC_API_ROUTES || "http://34.126.65.139:8080"
+export const API_ROUTE = process.env.NEXT_PUBLIC_API_ROUTES || "http://localhost:8080"

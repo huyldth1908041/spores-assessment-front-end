@@ -171,18 +171,21 @@ const EditItemView = () => {
         const tokenData = getLocalStorageObject("token")
         itemsApi.getItemById(tokenData.token, id).then(res => {
             const currentItem = res.data
-            setFile(currentItem.image)
-            setImage(currentItem.image)
-            setUploadedImgUrl({...uploadedImgUrl, imgUrl: currentItem.image})
-            setPricingType(currentItem.type)
-            setIsOwner(currentItem.owner === tokenData.email)
+            setFile(currentItem.item.image)
+            setImage(currentItem.item.image)
+            setUploadedImgUrl({...uploadedImgUrl, imgUrl: currentItem.item.image})
+            setPricingType(currentItem.item.type)
+            setIsOwner(currentItem.item.owner === tokenData.email)
             form.setFieldsValue({
-                currency: currentItem.currency,
-                name: currentItem.name,
-                price: currentItem.price,
-                description: currentItem.description,
-                image: currentItem.image,
-                type: currentItem.type,
+                currency: currentItem.item.currency,
+                name: currentItem.item.name,
+                price: currentItem.item.price,
+                description: currentItem.item.description,
+                image: currentItem.item.image,
+                type: currentItem.item.type,
+                auctionTime: [
+                    moment(), moment(currentItem.auction.end_at)
+                ]
             })
         }).catch(err => {
             setNotFound(true)
@@ -317,17 +320,17 @@ const EditItemView = () => {
                                     <ItemTypeContainer>
                                         <FormTitle>Chose sale type</FormTitle>
                                         <Radio.Group
-                                            defaultValue="fixed"
+                                            defaultValue="Fixed"
                                             buttonStyle="solid"
                                             onChange={handleChangePricingType}
                                         >
-                                            <StyledRadioButton value="fixed">Fixed price</StyledRadioButton>
-                                            <StyledRadioButton value="auction">Unlimited auction</StyledRadioButton>
+                                            <StyledRadioButton value="Fixed">Fixed price</StyledRadioButton>
+                                            <StyledRadioButton value="Auction">Unlimited auction</StyledRadioButton>
                                         </Radio.Group>
                                     </ItemTypeContainer>
                                 </StyledCol>
                                 <StyledCol span={24}>
-                                    <FormTitle>{pricingType === "fixed" ? "Pricing" : "Initial pricing"}</FormTitle>
+                                    <FormTitle>{pricingType === "Fixed" ? "Pricing" : "Initial pricing"}</FormTitle>
                                 </StyledCol>
                                 <StyledCol xl={12}>
                                     <Form.Item
@@ -339,7 +342,7 @@ const EditItemView = () => {
                                     >
                                         <StyledInputNumber
                                             type="text"
-                                            placeholder={pricingType === "fixed" ? "Price" : "Min Price"}/>
+                                            placeholder={pricingType === "Fixed" ? "Price" : "Min Price"}/>
                                     </Form.Item>
                                 </StyledCol>
                                 <StyledCol xl={12}>
@@ -362,7 +365,7 @@ const EditItemView = () => {
                                     </Form.Item>
                                 </StyledCol>
 
-                                {pricingType === "auction" && (
+                                {pricingType === "Auction" && (
                                     <StyledCol xl={12}>
                                         <FormTitle>Auction Time</FormTitle>
                                         <Form.Item
